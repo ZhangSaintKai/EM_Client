@@ -1,0 +1,125 @@
+{
+	"easycom": {
+		"autoscan": true,
+		"custom": {
+			"^uni-(.*)": "@/uni_modules/uni-$1/components/uni-$1/uni-$1.vue",
+			// 自定义easycom规则自动引入自定义组件
+			"^custom-(.*)": "@/uni_modules/custom-$1/components/custom-$1/custom-$1.vue"
+		}
+	},
+
+	"pages": [{
+		"path": "pages/conversation/conversation",
+		"style": {
+			"navigationBarTitleText": "消息"
+		}
+
+	}, {
+		"path": "pages/conversation/chat/chat",
+		"style": {
+			"navigationBarTitleText": "会话"
+		}
+
+	}, {
+		"path": "pages/contact/contact",
+		"style": {
+			"navigationBarTitleText": "联系人"
+		}
+
+	}, {
+		"path": "pages/user/user",
+		"style": {
+			"navigationBarTitleText": "我的"
+		}
+
+	}, {
+		"path": "pages/user/login/login",
+		"style": {
+			"navigationBarTitleText": "登录"
+		}
+	}, {
+		"path": "pages/user/modify/modify",
+		"style": {
+			"navigationBarTitleText": "修改资料",
+			"enablePullDownRefresh": false
+		}
+
+	}, {
+		"path": "pages/contact/profile/profile",
+		"style": {
+			"navigationBarTitleText": "用户信息",
+			"enablePullDownRefresh": false
+		}
+
+	}, {
+		"path": "pages/contact/search/search",
+		"style": {
+			"navigationBarTitleText": "搜索用户",
+			"enablePullDownRefresh": false
+		}
+
+	}    ,{
+            "path" : "pages/user/update-passowrd/update-passowrd",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "修改密码",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+    ],
+
+	// 分包
+	"subPackages": [{
+			"root": "subpackages/morefunction1",
+			"pages": [{
+				"path": "pages/module/placeholder/placeholder"
+			}]
+		},
+		{
+			"root": "subpackages/morefunction2",
+			"pages": [{
+				"path": "pages/module/placeholder/placeholder"
+			}]
+		}
+	],
+
+	// 分包预下载
+	"preloadRule": {
+		// "pages/index/index": {
+		// 	"network": "all", // 所有网络都预下载
+		// 	"packages": ["subpackages/morefunction1"]
+		// }
+	},
+
+	"tabBar": {
+		"color": "#73767a",
+		"selectedColor": "#55aaff",
+		"borderStyle": "black",
+		"backgroundColor": "#FFFFFF",
+		"list": [{
+			"pagePath": "pages/conversation/conversation",
+			"iconPath": "static/icon/conversation.png",
+			"selectedIconPath": "static/icon/conversation_active.png",
+			"text": "消息"
+		}, {
+			"pagePath": "pages/contact/contact",
+			"iconPath": "static/icon/contact.png",
+			"selectedIconPath": "static/icon/contact_active.png",
+			"text": "联系人"
+		}, {
+			"pagePath": "pages/user/user",
+			"iconPath": "static/icon/avatar.png",
+			"selectedIconPath": "static/icon/avatar_active.png",
+			"text": "我"
+		}]
+	},
+
+	"globalStyle": {
+		"backgroundColor": "#F5F5F5",
+		// "navigationStyle": "custom",
+		"navigationBarTextStyle": "white",
+		"navigationBarTitleText": "EM",
+		"navigationBarBackgroundColor": "#55aaff"
+	}
+}

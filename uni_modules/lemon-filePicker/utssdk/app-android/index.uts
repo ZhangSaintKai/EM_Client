@@ -1,0 +1,364 @@
+// index.uts
+
+// 引用android api
+import { UTSAndroid } from "io.dcloud.uts";
+import { ActivityCompat } from "androidx.core.app";
+import AlertDialog from 'android.app.AlertDialog';
+import { Context, Intent, ContentUris, ContentResolver } from "android.content";
+import Uri from "android.net.Uri";
+import FileUtils from "android.os.FileUtils";
+import { DocumentsContract, MediaStore } from "android.provider";
+import { File, FileOutputStream } from "java.io";
+import Activity from "android.app.Activity";
+import Cursor from "android.database.Cursor";
+import { Build, Environment, Bundle } from "android.os";
+import DialogInterface from 'android.content.DialogInterface';
+import JSONObject from 'com.alibaba.fastjson.JSONObject';
+
+class FileActivity extends Activity {
+
+	constructor() {
+		super();
+	}
+	override onCreate(savedInstanceState ?: Bundle) : void {
+		super.onCreate(savedInstanceState)
+		var dataUri = this.getIntent().getData()
+		transUriStart(this, dataUri)
+
+	}
+	// override  onResume() {
+	//         super.onResume()
+
+	// var dataUri=this.getIntent().getData()
+	// console.log(dataUri.toString())
+	// }
+}
+
+type InfoOptions = {
+	scope ?: string,
+	permission ?: boolean,
+	mimetype ?: string,
+	action ?: string,
+	success ?: (res : object) => void
+	fail ?: (res : object) => void
+	complete ?: (res : object) => void
+}
+
+
+const FILE_SELECT_REQUEST_CODE = 110
+export default function fileSelect(options : InfoOptions) {
+
+	let permissionList = ["android.permission.READ_EXTERNAL_STORAGE"]
+	const permission = options.permission;
+	if (permission != null && permission) {
+		UTSAndroid.gotoSystemPermissionActivity(UTSAndroid.getUniActivity()!, permissionList)
+		return;
+	}
+	// 请求权限 
+	UTSAndroid.requestSystemPermission(UTSAndroid.getUniActivity()!, permissionList, function (allRight : boolean, grantedList : string[]) {
+		if (allRight) {
+			// 用户同意了全部权限
+			if (options.action != null&&options.action=="openWithFile") {
+				 let prefs = UTSAndroid.getUniActivity()?.getSharedPreferences("lemonjkReceive",Context.MODE_PRIVATE)
+				 let res  = prefs?.getString("receiveFromOtherApp","")
+				 if(res!=null&&res!=''){ 
+					 options.success?.(JSONObject.parse(res)) 
+					 options.complete?.(JSONObject.parse(res))
+				 }else{
+					 const res2 = {
+					 	code: "1002",
+					 	errMsg: 'fileselect:fail',
+					 	detail: "文件不存在"
+					 }
+					 options.fail?.(res2) 
+					 options.complete?.(res2)
+				 }
+			} 
+			else if(options.action=='fk'){
+				let fuck_intent = new Intent(UTSAndroid.getUniActivity(), FileActivity().javaClass);
+			}
+			else {
+				fileSelectStart(options);
+			}
+
+		} else {
+			// 用户仅同意了 grantedList中的权限
+			options.fail?.({
+				code: "1001",
+				errMsg: 'fileselect:fail',
+				detail: "未授权文件读取权限"
+			})
+		}
+	}, function (doNotAskAgain : boolean, grantedList : string[]) {
+		// 用户拒绝了部分权限，仅允许了grantedList中的权限
+		// if (doNotAskAgain) {
+		// 	// 用户拒绝了权限，并且选择不再询问 
+		// }
+		options.fail?.({
+			code: "1001",
+			errMsg: 'fileselect:fail',
+			detail: "未授权文件读取权限"
+		})
+	})
+}
+/**
+	* 用户输入对话框监听器
+	*/
+class DialogListener extends DialogInterface.OnClickListener {
+
+	callback : () => void
+
+	constructor(cb : () => void) {
+		super();
+		this.callback = cb;
+	}
+
+	override onClick(_dialog : DialogInterface, _arg1 : Int) : void {
+		// //数据获取
+
+		// let input = this.inputET.getText().toString()
+		this.callback();
+		// Toast.makeText(UTSAndroid.getUniActivity(), input,
+		// 	Toast.LENGTH_LONG).show();
+
+	}
+}
+
+
+function transUriStart(context : Context, myUri ?: Uri) {
+	let fileActivity = context as FileActivity;
+	if (myUri != null) {
+		// console.log(getRealPathFromURI(context, myUri))
+		const newFile = new File(getRealPathFromURI(context, myUri));
+		if (newFile.exists()) {
+			let filePath = newFile.toString();
+			let fileName = newFile.getName();
+			let fileSize = newFile.length();
+			const extIdx = fileName.lastIndexOf(".");
+			let fileExt = extIdx != -1 ? fileName.substring(extIdx + 1) : ""
+			const res = {
+				code: "0",
+				filePath: filePath,
+				fileName: fileName,
+				fileSize: fileSize,
+				fileExt: fileExt,
+				rawPath:myUri.toString(),
+				errMsg: 'fileselect:ok',
+				detail: "文件读取成功"
+			}
+			let editor=context.getSharedPreferences("lemonjkReceive",Context.MODE_PRIVATE).edit();
+			editor.putString("receiveFromOtherApp", JSON.stringify(res))
+			editor.apply();
+			new AlertDialog.Builder(fileActivity)
+				.setTitle("文件打开成功")
+				.setMessage("[" + fileName + "]" + "已保存到应用中")
+				.setPositiveButton("确定", new DialogListener(() => {
+					fileActivity.finish();
+				})).show();
+		} else {
+			const res2 = {
+				code: "1002",
+				errMsg: 'fileselect:fail',
+				detail: "文件不存在"
+			}
+			new AlertDialog.Builder(fileActivity)
+				.setTitle("文件打开失败")
+				.setMessage("文件不存在")
+				.setPositiveButton("确定", new DialogListener(() => {
+					fileActivity.finish();
+				})).show();
+			console.log(res2)
+		}
+	} else {
+		const res3 = {
+			code: "1005",
+			errMsg: 'fileselect:fail',
+			detail: "文件选取出错:myUri为null"
+		}
+		new AlertDialog.Builder(fileActivity)
+			.setTitle("文件打开失败")
+			.setMessage("文件不存在")
+			.setPositiveButton("确定", new DialogListener(() => {
+				fileActivity.finish();
+			})).show();
+		console.log(res3)
+	}
+}
+function fileSelectStart(options : InfoOptions) {
+	const context = UTSAndroid.getAppContext();
+	if (context != null) {
+		const intent = new Intent(Intent.ACTION_GET_CONTENT);
+		if (options.scope != null) {
+			let strPath = options.scope
+			strPath = strPath?.replaceAll("/", "%2F");
+			let uriByScope : Uri = Uri.parse("content://com.android.externalstorage.documents/document/primary%3A" + strPath);
+			intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, uriByScope);
+		}
+		var mimeType = "*/*";
+		const mimetypeTemp = options.mimetype;
+		if (mimetypeTemp != null) {
+			mimeType = mimetypeTemp;
+		}
+		intent.setType(mimeType);
+		intent.addCategory(Intent.CATEGORY_OPENABLE);
+		UTSAndroid.getUniActivity()?.startActivityForResult(intent, FILE_SELECT_REQUEST_CODE);
+		UTSAndroid.onAppActivityResult((requestCode : Int, resultCode : Int, data ?: Intent) => {
+			UTSAndroid.offAppActivityResult(null);
+			if (requestCode == FILE_SELECT_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
+				const fileUri = data.getData();
+				// console.log(fileUri?.toString()); 
+				if (fileUri != null) {
+					let path = getRealPathFromURI(context, fileUri)
+					const file = new File(path)
+					if (file.exists()) {
+						let upLoadFilePath = file.toString();
+						let upLoadFileName = file.getName();
+						let fileSize = file.length();
+						const extIdx = upLoadFileName.lastIndexOf(".");
+						let fileExt = extIdx != -1 ? upLoadFileName.substring(extIdx + 1) : ""
+						const res = {
+							code: "0",
+							filePath: upLoadFilePath,
+							fileName: upLoadFileName,
+							fileSize: fileSize,
+							fileExt: fileExt,
+							errMsg: 'fileselect:ok',
+							detail: "文件读取成功"
+						}
+						options.success?.(res)
+						options.complete?.(res)
+					} else {
+						const res2 = {
+							code: "1002",
+							errMsg: 'fileselect:fail',
+							detail: "文件不存在"
+						}
+						options.fail?.(res2)
+						options.complete?.(res2)
+					}
+				}
+			}
+		});
+	} else {
+		const res3 = {
+			code: "1005",
+			errMsg: 'fileselect:fail',
+			detail: "文件选取出错:context为null"
+		}
+		options.fail?.(res3)
+		options.complete?.(res3)
+	}
+}
+
+function getRealPathFromURI(context : Context, uri : Uri) : string {
+	const isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+	//4.4以下的版本：不支持
+	//大于4.4	
+	// DocumentProvider 
+	if (isKitKat) {
+		if (DocumentsContract.isDocumentUri(context, uri)) {
+			if (isExternalStorageDocument(uri)) {
+				console.log("isExternalStorageDocument")
+				return saveFileFromUri(context, uri)
+			}
+			// DownloadsProvider
+			else if (isDownloadsDocument(uri)) {
+				console.log("isDownloadsDocument")
+				return saveFileFromUri(context, uri)
+			}
+			// MediaProvider 
+			else if (isMediaDocument(uri)) {
+				console.log("isMediaDocument")
+				return saveFileFromUri(context, uri)
+			}
+		}
+		//其他 content
+		else if ("content".equals(uri.getScheme())) {
+			// return getDataColumn(context, uri, null, null);
+			console.log("content")
+			return saveFileFromUri(context, uri)
+		}
+		//其他 file
+		else if ("file".equals(uri.getScheme())) {
+			console.log("file")
+			return uri.getPath() as string;
+		}
+	}
+	return ""
+}
+function isExternalStorageDocument(uri : Uri) : boolean {
+	return "com.android.externalstorage.documents".equals(uri.getAuthority());
+}
+
+function isDownloadsDocument(uri : Uri) : boolean {
+	return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+}
+function isMediaDocument(uri : Uri) : boolean {
+	return "com.android.providers.media.documents".equals(uri.getAuthority());
+}
+
+// function getDataColumn(context : Context, uri : Uri, selection : string | null, selectionArgs : String[] | null) : string {
+// 	let column = "_data";
+// 	let projection = arrayOf<string>(column)
+// 	let cursor : Cursor | null = null;
+// 	const _selectionArgs = selectionArgs != null ? selectionArgs.toTypedArray() : null
+
+// 	try {
+
+// 		cursor = context.getContentResolver().query(uri, projection, selection, _selectionArgs, null);
+
+// 		if (cursor != null && cursor.moveToFirst()) {
+// 			const column_index = cursor.getColumnIndexOrThrow(column);
+// 			return cursor.getString(column_index);
+// 		}
+// 	} catch (e) {
+// 		console.log(e);
+// 	} finally {
+// 		if (cursor != null) {
+// 			cursor.close();
+// 		}
+// 	}
+// 	return "";
+// }
+function getFileName(context : Context, uri : Uri) : string {
+	let projection = arrayOf(MediaStore.Images.ImageColumns.DISPLAY_NAME)
+	let cursor = context.getContentResolver().query(uri, projection, null, null, null)
+	try {
+		if (cursor != null && cursor.moveToFirst()) {
+			let name_col_index = cursor.getColumnIndex(projection[0])
+			return cursor.getString(name_col_index)
+		}
+	} catch (e) {
+		console.log(e);
+	} finally {
+		cursor?.close()
+	}
+	return ""
+}
+function saveFileFromUri(context : Context, uri : Uri) : string {
+	let file : File;
+	const contentResolver : ContentResolver = context.getContentResolver();
+	const cursor : Cursor | null = contentResolver.query(uri, null, null, null, null);
+	if (cursor != null && cursor.moveToFirst()) {
+		const displayName = getFileName(context, uri)
+		try {
+			const is = contentResolver.openInputStream(uri);
+			if (is != null) {
+				const file1 : File = new File(context.getExternalCacheDir()?.getAbsolutePath() + "/" + System.currentTimeMillis());
+				if (!file1.exists()) {
+					file1.mkdir();
+				}
+				const cache : File = new File(file1.getPath(), displayName);
+				const fos = new FileOutputStream(cache);
+				FileUtils.copy(is, fos);
+				file = cache;
+				fos.close();
+				is.close();
+				return file.getAbsolutePath();
+			}
+		} catch (e) {
+			console.log(e);
+		}
+	}
+	return ""
+}

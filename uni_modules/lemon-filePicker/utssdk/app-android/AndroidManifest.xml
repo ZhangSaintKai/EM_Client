@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools"  package="com.lemonjk.uni_modules.lemon_filepicker">
+	<application android:requestLegacyExternalStorage="true">
+		<meta-data android:name="ScopedStorage" android:value="true" />
+		<activity   android:name="uts.sdk.modules.lemonFilePicker.FileActivity" android:exported="true" tools:ignore="AppLinkUrlError" >
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<data android:mimeType="*/*" />
+				<data android:host="*" />
+				<data android:scheme="file" />
+				<data android:scheme="content" />
+			</intent-filter>
+		</activity>
+	</application>
+</manifest>
