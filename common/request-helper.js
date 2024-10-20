@@ -17,6 +17,7 @@ module.exports = {
 		uni.addInterceptor("request", {
 			// 请求失败拦截
 			fail: (e) => {
+				if (e.errMsg.includes("CertPathValidatorException")) return; // 不提示证书类错误
 				console.log("【请求】失败：" + e.errMsg);
 				let tip = "连接服务器失败，请联系开发者";
 				if (!store.getters.getNetworkStatus) tip = "当前无网络连接，请联网";

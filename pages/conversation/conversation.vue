@@ -62,12 +62,9 @@
 			if (!this.userInfo) return;
 			// 因为同样的监听，后定义的生效，所以每次页面显示都需要重新定义
 			uni.onSocketMessage(res => {
-				try {
-					// res.data = JSON.parse(res.data);
+				// console.log("列表接收", res.data);
+				if (res.data !== "服务端已标识WS")
 					this.getGetConversationList();
-				} catch (e) {
-					console.log("列表接收：", res.data);
-				}
 			});
 			this.getGetConversationList();
 		},
@@ -78,7 +75,7 @@
 		},
 		methods: {
 			async getGetConversationList() {
-				let resdata = await this.$api.getPrivateConversationList({}, false);
+				let resdata = await this.$api.getPrivateConversationList(null, false);
 				if (!resdata) return;
 				resdata.forEach(elm => {
 					if (!elm.newestMessageId) {

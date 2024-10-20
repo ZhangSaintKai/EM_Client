@@ -175,15 +175,22 @@
 					conversationId: this.chat.conversationId
 				}, false);
 				this.scrollBottomHeight = this.messages.length * 500 + this.containerHeight;
-				if (!resdata || !resdata.length) return;
+				if (!resdata) return;
 				resdata.forEach(elm => {
 					if (elm.messageType !== "text") elm.progress = 0;
 				});
+				// 【利用自增消息Id去除客户端与服务器重复部分消息】
+				let clientNewestMessage = this.messages.slice(-1)[0];
+				if (clientNewestMessage) {
+					let id = parseInt(clientNewestMessage.messageId.slice(1));
+					resdata = resdata.filter(elm => parseInt(elm.messageId.slice(1)) > id);
+				}
+				// 【利用自增消息Id去除客户端与服务器重复部分消息】
 				this.messages = this.messages.concat(resdata);
+				uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
+				console.log("已添加到本地消息");
 				// 向服务器确认已接收消息
 				this.$api.readPrivateMessage(JSON.stringify(this.chat.conversationId), false);
-				// uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
-				// console.log("已添加到本地消息");
 				this.$nextTick(() => {
 					this.scrollBottomHeight = this.messages.length * 500 + this.containerHeight;
 				});
@@ -356,7 +363,7 @@
 					}
 				}, 1000);
 				// 上传文件
-				console.log(file);
+				// console.log(file);
 				// let resFile = await this.FileManager.upload(file, this.chat.conversationId, 1);
 				let resFile = await this.FileManager.upload(file, this.chat.conversationId, 0);
 				if (!resFile) return;
@@ -371,7 +378,7 @@
 				// message.messageId = resdata.message.messageId;
 				// message.sendTime = resdata.message.sendTime;
 				if (message.progress !== 100) message.progress = 100;
-				// uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
+				uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
 			},
 
 			async sendMessage() {

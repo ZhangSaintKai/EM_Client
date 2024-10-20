@@ -308,7 +308,7 @@ function download(item) {
 					});
 				item.downloadid = downloadTask.id;
 				let userInfo = store.getters.getUserInfo;
-				downloadTask.setRequestHeader("Authorization", userInfo && userInfo.Token || "");
+				downloadTask.setRequestHeader("Authorization", userInfo && userInfo.token || "");
 				downloadTask.addEventListener("statechanged", (download, status) => {
 					// 监听下载进度
 					item.progress = parseInt((download.downloadedSize / download.totalSize) * 100);

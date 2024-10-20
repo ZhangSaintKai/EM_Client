@@ -6,18 +6,19 @@
 			// #ifdef APP-PLUS  
 			plus.runtime.getProperty(plus.runtime.appid, (widgetInfo) => {
 				uni.request({
-					url: BaseUrl.http + "/Version/Update",
+					url: BaseUrl.http + "/Client/CheckUpdate",
 					method: "POST",
 					data: {
 						version: widgetInfo.version,
 						name: widgetInfo.name
 					},
+					sslVerify: false,
 					success: (response) => {
 						let data = response.data;
-						console.log(JSON.stringify(data));
+						// console.log(JSON.stringify(data));
 						if (!data.update) return;
 						uni.showModal({
-							title: "发现新版本：" + data.newestVersion,
+							title: "发现新版本：" + data.version,
 							content: data.description || "",
 							showCancel: false,
 							confirmText: "更新",
@@ -31,13 +32,16 @@
 									url: BaseUrl.http + url,
 									success: (respDownload) => {
 										uni.hideLoading();
-										console.log(JSON.stringify(respDownload));
-										if (respDownload.statusCode !== 200) return;
+										console.log(JSON.stringify(
+											respDownload));
+										if (respDownload.statusCode !==
+											200) return;
 										uni.showLoading({
 											title: "更新中",
 											mask: true
 										});
-										plus.runtime.install(respDownload.tempFilePath, {
+										plus.runtime.install(respDownload
+											.tempFilePath, {
 												force: false
 											},
 											() => {
@@ -50,7 +54,8 @@
 												});
 												setTimeout(() => {
 														// 热重启
-														plus.runtime.restart();
+														plus.runtime
+															.restart();
 													},
 													1000
 												);
@@ -59,7 +64,9 @@
 												uni.hideLoading();
 												uni.showModal({
 													title: "更新失败",
-													content: JSON.stringify(e),
+													content: JSON
+														.stringify(
+															e),
 													showCancel: false
 												});
 											}
@@ -82,7 +89,7 @@
 
 			//
 			uni.connectSocket({
-				url: BaseUrl.ws + "/WebSocket"
+				url: BaseUrl.ws + "/WebSocket/Connect"
 			});
 			uni.onSocketError(e => {
 				// uni.showToast({
@@ -95,7 +102,7 @@
 					// 	title: "WS正在重连"
 					// });
 					uni.connectSocket({
-						url: BaseUrl.ws + "/WebSocket"
+						url: BaseUrl.ws + "/WebSocket/Connect"
 					});
 				}, 3000);
 			});
@@ -110,19 +117,19 @@
 					// 	title: "WS正在重连"
 					// });
 					uni.connectSocket({
-						url: BaseUrl.ws + "/WebSocket"
+						url: BaseUrl.ws + "/WebSocket/Connect"
 					});
 				}, 3000);
 			});
 			uni.onSocketMessage(res => {
 				//同样的监听，后定义的生效
-				console.log("全局接收：", res.data);
+				// console.log("全局接收", res.data);
 			});
 			uni.onSocketOpen(header => {
-				console.log("WS连接已打开", header);
+				// console.log("WS连接已打开");
 				let userInfo = store.getters.getUserInfo;
 				uni.sendSocketMessage({
-					data: userInfo && userInfo.Token || ""
+					data: userInfo && userInfo.token || ""
 				});
 			});
 			// uni.clearStorage();
