@@ -2,44 +2,43 @@
 	<view class="container" :style="{ height: containerHeight + 'px' }">
 		<scroll-view class="message-list" scroll-y="true" :scroll-top="scrollBottomHeight">
 			<view style="height: 40rpx;"></view>
-			<view v-for="(item, index) in messages" :key="item.MessageID" class="flex message"
-				:class="item.PrivateMemberID === chat.PrivateMemberID ? 'otherSide' : 'me'">
-				<view v-if="item.PrivateMemberID === chat.PrivateMemberID" class="avatar">
-					<image :src="`${BaseUrl.file}image/${chat.Avatar}`" mode="aspectFill" />
+			<view v-for="(item, index) in messages" :key="item.messageId" class="flex message"
+				:class="item.memberId === chat.otherMemberId ? 'otherSide' : 'me'">
+				<view v-if="item.memberId === chat.otherMemberId" class="avatar">
+					<image :src="BaseUrl.file+chat.otherUser.avatar" mode="aspectFill" />
 				</view>
-				<view v-if="item.MessageType==='text'" class="content-text">
-					{{item.Content}}
+				<view v-if="item.messageType==='text'" class="content-text">
+					{{item.content}}
 				</view>
 				<view v-else>
-					<view v-if="item.MessageType==='image'" class="image">
+					<view v-if="item.messageType==='image'" class="image">
 						<!-- 发送时显示进度 -->
-						<image
-							:src="item.Progress&&item.Progress!==100? item.Source : `${BaseUrl.file}${item.MessageType}/${item.Source}`"
+						<image :src="item.progress&&item.progress!==100? item.source : BaseUrl.file+item.source"
 							mode="heightFix" @tap="previewImage(item)">
 						</image>
-						<view v-if="item.Progress&&item.Progress!==100" class="progress">{{item.Progress}}%</view>
+						<view v-if="item.progress&&item.progress!==100" class="progress">{{item.progress}}%</view>
 					</view>
-					<view v-if="item.MessageType==='video'" class="video">
+					<view v-if="item.messageType==='video'" class="video">
 						<image src="../../../static/icon/video.png" mode="scaleToFill" @tap="playVideo(item)"
 							@longpress="longPressVideo(item)">
 						</image>
 						<view class="file-name">
-							{{item.Content}}
+							{{item.content}}
 						</view>
-						<view v-if="item.Progress>0&&item.Progress<100" class="progress">{{item.Progress}}%</view>
+						<view v-if="item.progress>0&&item.progress<100" class="progress">{{item.progress}}%</view>
 					</view>
-					<view v-if="!['image','video'].includes(item.MessageType)" class="file">
-						<image :src="`../../../static/icon/${item.MessageType}.png`" @tap="openFile(item)"
+					<view v-if="!['image','video'].includes(item.messageType)" class="file">
+						<image :src="`../../../static/icon/${item.messageType}.png`" @tap="openFile(item)"
 							mode="scaleToFill">
 						</image>
 						<view class="file-name">
-							{{item.Content}}
+							{{item.content}}
 						</view>
-						<view v-if="item.Progress>0&&item.Progress<100" class="progress">{{item.Progress}}%</view>
+						<view v-if="item.progress>0&&item.progress<100" class="progress">{{item.progress}}%</view>
 					</view>
 				</view>
-				<view v-if="item.PrivateMemberID === chat.SelfMemberID" class="avatar">
-					<image :src="`${BaseUrl.file}image/${me.Avatar}`" mode="aspectFill" />
+				<view v-if="item.memberId === chat.memberId" class="avatar">
+					<image :src="BaseUrl.file+me.avatar" mode="aspectFill" />
 				</view>
 			</view>
 			<view style="height: 30rpx;"></view>
@@ -68,8 +67,8 @@
 					btnBgColor="#55aaff" btnText="确定" :filterArr="[]"></custom-select-file> -->
 			</view>
 		</view>
-		<video v-if="video" :src="video.LocalUrl||`${BaseUrl.file}${video.MessageType}/${video.Source}`" autoplay
-			@error="videoError" object-fit="cover"></video>
+		<video v-if="video" :src="video.localUrl||BaseUrl.file+video.source" autoplay @error="videoError"
+			object-fit="cover"></video>
 	</view>
 </template>
 
@@ -101,7 +100,7 @@
 						backgroundColor: "#000000"
 					});
 					uni.setNavigationBarTitle({
-						title: newValue.Content
+						title: newValue.content
 					});
 				} else {
 					uni.setNavigationBarColor({
@@ -109,7 +108,7 @@
 						backgroundColor: "#55aaff"
 					});
 					uni.setNavigationBarTitle({
-						title: this.chat.Remark || this.chat.NickName
+						title: this.chat.remark || this.chat.otherUser.nickName
 					});
 				}
 			},
@@ -129,12 +128,12 @@
 				try {
 					res.data = JSON.parse(res.data);
 					this.messages.push(res.data);
-					uni.setStorageSync(`${this.me.UserID}-${this.chat.PrivateID}`, this.messages);
+					uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
 					console.log("WS：已添加到本地消息");
 					// 向服务器确认已接收消息
-					this.$api.readPrivateMessage({
-						readList: [res.data]
-					}, false);
+					// this.$api.readPrivateMessage({
+					// 	readList: [res.data]
+					// }, false);
 					this.$nextTick(() => {
 						this.scrollBottomHeight = this.messages.length * 500 + this.containerHeight;
 					});
@@ -144,7 +143,7 @@
 			});
 			this.me = this.$store.getters.getUserInfo;
 			this.chat = this.$store.getters.getChat || {};
-			this.messages = uni.getStorageSync(`${this.me.UserID}-${this.chat.PrivateID}`) || [];
+			this.messages = uni.getStorageSync(`${this.me.userId}-${this.chat.conversationId}`) || [];
 			this.getMessageList();
 
 			// this.test(1);
@@ -161,7 +160,7 @@
 			};
 			uni.onKeyboardHeightChange(this.setContainerHeight);
 			uni.setNavigationBarTitle({
-				title: this.chat.Remark || this.chat.NickName
+				title: this.chat.remark || this.chat.otherUser.nickName
 			});
 		},
 		onUnload() {
@@ -172,21 +171,19 @@
 		methods: {
 
 			async getMessageList() {
-				let response = await this.$api.getPrivateMessageList({
-					otherSideMemberID: this.chat.PrivateMemberID
+				let resdata = await this.$api.getPrivateMessageList({
+					conversationId: this.chat.conversationId
 				}, false);
 				this.scrollBottomHeight = this.messages.length * 500 + this.containerHeight;
-				if (!response || !response.pmList.length) return;
-				response.pmList.forEach(elm => {
-					if (elm.MessageType !== "text") elm.Progress = 0;
+				if (!resdata || !resdata.length) return;
+				resdata.forEach(elm => {
+					if (elm.messageType !== "text") elm.progress = 0;
 				});
-				this.messages = this.messages.concat(response.pmList);
-				uni.setStorageSync(`${this.me.UserID}-${this.chat.PrivateID}`, this.messages);
-				console.log("已添加到本地消息");
+				this.messages = this.messages.concat(resdata);
 				// 向服务器确认已接收消息
-				this.$api.readPrivateMessage({
-					readList: response.pmList
-				}, false);
+				this.$api.readPrivateMessage(JSON.stringify(this.chat.conversationId), false);
+				// uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
+				// console.log("已添加到本地消息");
 				this.$nextTick(() => {
 					this.scrollBottomHeight = this.messages.length * 500 + this.containerHeight;
 				});
@@ -224,7 +221,7 @@
 				// 	return;
 				// }
 				uni.previewImage({
-					urls: [item.LocalUrl],
+					urls: [item.localUrl],
 					current: 0,
 					indicator: "none",
 					// 长按保存到用户文件管理器下的目录
@@ -237,16 +234,16 @@
 								if (!b) return;
 								uni.showToast({
 									icon: "none",
-									title: `图片保存于${item.LocalUrl}`,
+									title: `图片保存于${item.localUrl}`,
 									duration: 3000
 								});
-								uni.setStorageSync(`${this.me.UserID}-${this.chat.PrivateID}`, this
+								uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this
 									.messages);
 							}
 						}
 					}
 				});
-				uni.setStorageSync(`${this.me.UserID}-${this.chat.PrivateID}`, this.messages);
+				uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
 			},
 
 			async playVideo(item) {
@@ -254,21 +251,21 @@
 				// 预览时缓存于应用沙盒目录
 				let b = await this.FileManager.cache(item);
 				if (!b) return;
-				uni.setStorageSync(`${this.me.UserID}-${this.chat.PrivateID}`, this.messages);
+				uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
 			},
 			videoError(e) {
-				console.log("视频出错", this.video.LocalUrl, this.video.Source);
+				console.log("视频出错", this.video.localUrl, this.video.source);
 			},
 			longPressVideo(item) {
 				// 长按保存到用户文件管理器下的目录
 				uni.showModal({
 					title: "保存视频？",
-					content: item.Content,
+					content: item.content,
 					success: async res => {
 						if (res.cancel) return;
 						let b = await this.FileManager.download(item);
 						if (!b) return;
-						uni.setStorageSync(`${this.me.UserID}-${this.chat.PrivateID}`, this.messages);
+						uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
 					}
 				});
 			},
@@ -278,11 +275,11 @@
 				if (!b) return;
 				uni.showModal({
 					title: "文件保存于",
-					content: item.LocalUrl,
+					content: item.localUrl,
 					confirmText: "打开",
 					success: res => {
 						if (res.cancel) return;
-						plus.runtime.openFile(item.LocalUrl, {}, (e) => {
+						plus.runtime.openFile(item.localUrl, {}, (e) => {
 							uni.showModal({
 								content: e.message,
 								showCancel: false
@@ -290,7 +287,7 @@
 						});
 					}
 				});
-				uni.setStorageSync(`${this.me.UserID}-${this.chat.PrivateID}`, this.messages);
+				uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
 			}, 2000),
 
 
@@ -330,15 +327,15 @@
 				files.forEach(elm => {
 					// 文件信息加入本地消息列表
 					this.messages.push({
-						PrivateID: this.chat.PrivateID,
-						PrivateMemberID: this.chat.SelfMemberID,
-						MessageType: elm.type,
-						Content: elm.name,
-						Source: elm.url,
-						ReplyFor: null,
-						FileID: elm.idinclient,
-						Progress: 0,
-						LocalUrl: elm.url
+						conversationId: this.chat.conversationId,
+						memberId: this.chat.memberId, //用于客户端
+						messageType: elm.type,
+						content: elm.name,
+						source: elm.url,
+						replyFor: null,
+						fileId: elm.idinclient,
+						progress: 0,
+						localUrl: elm.url
 					});
 					this.uploadFile(elm);
 				});
@@ -349,47 +346,43 @@
 			},
 
 			async uploadFile(file) {
-				let msg = this.messages.find(elm => elm.FileID === file.idinclient);
+				let message = this.messages.find(elm => elm.fileId === file.idinclient);
 				// 设置监听上传进度
 				let i = setInterval(() => {
-					msg.Progress = file.progress;
-					// console.log(msg.Progress);
+					message.progress = file.progress;
+					// console.log(message.progress);
 					if (!file.progress || file.progress === 100) {
 						clearInterval(i);
 					}
 				}, 1000);
 				// 上传文件
-				let resFile = await this.FileManager.upload(file);
-				// if (!resFile) return;
-				msg.MessageType = resFile.type;
-				msg.Source = resFile.filename;
-				msg.Content = resFile.originalname;
-				if (msg.Progress !== 100) msg.Progress = 100;
+				console.log(file);
+				// let resFile = await this.FileManager.upload(file, this.chat.conversationId, 1);
+				let resFile = await this.FileManager.upload(file, this.chat.conversationId, 0);
+				if (!resFile) return;
+				message.conversationId = this.chat.conversationId;
+				message.source = resFile.fileId;
+				message.replyFor = null;
+				if (message.progress !== 100) message.progress = 100;
 				// 把文件信息发给服务端
-				let response = await this.$api.addPrivateMessage({
-					otherSideMemberID: this.chat.PrivateMemberID,
-					messageType: resFile.type,
-					content: resFile.originalname,
-					source: resFile.filename,
-					replyFor: null
-				}, false);
-				if (!response) return;
+				let resdata = await this.$api.sendPrivateMessage(message, false);
+				if (!resdata) return;
 				// 更新本地消息文件信息
-				msg.MessageID = response.message.MessageID;
-				msg.SendTime = response.message.SendTime;
-				if (msg.Progress !== 100) msg.Progress = 100;
-				uni.setStorageSync(`${this.me.UserID}-${this.chat.PrivateID}`, this.messages);
+				// message.messageId = resdata.message.messageId;
+				// message.sendTime = resdata.message.sendTime;
+				if (message.progress !== 100) message.progress = 100;
+				// uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
 			},
 
 			async sendMessage() {
 				if (!this.inputValue) return;
 				let message = {
-					PrivateID: this.chat.PrivateID,
-					PrivateMemberID: this.chat.SelfMemberID,
-					MessageType: "text",
-					Content: this.inputValue,
-					Source: null,
-					ReplyFor: null
+					conversationId: this.chat.conversationId,
+					memberId: this.chat.memberId, //用于客户端
+					messageType: "text",
+					content: this.inputValue,
+					source: null,
+					replyFor: null
 				};
 				// 字符串消息加入本地列表(传递引用)
 				this.messages.push(message);
@@ -399,16 +392,12 @@
 					this.scrollBottomHeight = this.messages.length * 500 + this.containerHeight;
 				});
 				// 发给服务端
-				let response = await this.$api.addPrivateMessage({
-					otherSideMemberID: this.chat.PrivateMemberID,
-					messageType: "text",
-					content: content,
-					replyFor: null
-				}, false);
-				if (!response) return;
-				message.MessageID = response.message.MessageID;
-				message.SendTime = response.message.SendTime;
-				uni.setStorageSync(`${this.me.UserID}-${this.chat.PrivateID}`, this.messages);
+				let resdata = await this.$api.sendPrivateMessage(message, false);
+				if (!resdata) return;
+				// 更新本地消息文本信息
+				// message.messageId = resdata.message.messageId;
+				// message.sendTime = resdata.message.sendTime;
+				// uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
 			}
 
 		},

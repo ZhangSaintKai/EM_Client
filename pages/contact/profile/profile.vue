@@ -2,7 +2,7 @@
 	<view class="root">
 		<view class="container flex-column-x-center">
 			<view class="avatar">
-				<image v-if="user.Avatar" :src="`${BaseUrl.file}image/${user.Avatar}`" mode="aspectFill"></image>
+				<image v-if="user.Avatar" :src="BaseUrl.file+user.avatar" mode="aspectFill"></image>
 			</view>
 			<view class="nick-name">
 				{{user.NickName}}

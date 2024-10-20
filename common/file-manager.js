@@ -126,9 +126,11 @@ function chooseFile() {
 			success: (res) => {
 				let splitPath = res.filePath.split(".");
 				let file = {
+					idinclient: uuidv4(),
 					url: res.filePath,
 					name: res.fileName,
-					idinclient: uuidv4()
+					type: res.fileExt,
+					sizeMB: (res.fileSize / 1024 / 1024).toFixed(4)
 				};
 				resolve(file);
 			},
@@ -187,7 +189,7 @@ function upload(file, ownerId, ownerType = 0) {
 					if (res.statusCode === 404) message = "地址错误";
 					if (res.statusCode === 400) message = "请求参数错误";
 					if (res.statusCode === 401) message = "未通过Token身份验证";
-					if (res.statusCode === 422 || res.statusCode === 500) message = "不支持的文件类型";
+					if (res.statusCode === 422 || res.statusCode === 500) message = res.data;
 					if (res.statusCode === 413) message = `${file.name}文件过大`;
 					uni.showToast({
 						icon: "none",
@@ -228,11 +230,11 @@ function cancelUpload(file) {
  * 将消息文件缓存于应用沙盒目录
  */
 function cache(item) {
-	if (item.LocalUrl || item.caching) return;
+	if (item.localUrl || item.caching) return;
 	item.caching = true;
 	return new Promise((resolve, reject) => {
 		uni.downloadFile({
-			url: `${BaseUrl.file}${item.MessageType}/${item.Source}`,
+			url: BaseUrl.file + item.source,
 			success: resD => {
 				if (resD.statusCode === 200) {
 					uni.saveFile({
@@ -240,7 +242,7 @@ function cache(item) {
 						success: resS => {
 							item.caching = false;
 							console.log(resD.statusCode, "已缓存至", resS.savedFilePath);
-							item.LocalUrl = resS.savedFilePath;
+							item.localUrl = resS.savedFilePath;
 							resolve(true);
 						},
 						fail: (e) => {
@@ -261,27 +263,27 @@ function cache(item) {
 
 /**
  * 消息文件下载方法
- * @param {Object} {LocalUrl: string, Source: string, Content: string} 文件信息对象
+ * @param {Object} {localUrl: string, source: string, Content: string} 文件信息对象
  * @returns {Promise} 文件下载执行结果
  */
 function download(item) {
-	if (item.Progress > 0 && item.Progress < 100) {
+	if (item.progress > 0 && item.progress < 100) {
 		// 避免重复下载同一文件
 		return;
 	}
 	return new Promise((resolve, reject) => {
-		let isCache = item.LocalUrl && !item.LocalUrl.includes("EncryptedMessage");
+		let isCache = item.localUrl && !item.localUrl.includes("EncryptedMessage");
 		plus.io.resolveLocalFileSystemURL(
-			isCache ? "" : item.LocalUrl,
+			isCache ? "" : item.localUrl,
 			(exist) => {
 				// 获取到已下载的文件
 				resolve(true);
 			}, (e) => {
 				// 未下载
-				let sourceUrl = `${BaseUrl.file}${item.MessageType}/${item.Source}`;
+				let sourceUrl = BaseUrl.file + item.source;
 				// 保存路径file:///storage/emulated/0/就是用户文件管理器能看到的根目录
 				let destinationUrl =
-					`file:///storage/emulated/0/EncryptedMessage/download/${item.MessageType}/${item.Content}`;
+					`file:///storage/emulated/0/EncryptedMessage/download/${item.messageType}/${item.content}`;
 				let downloadTask = plus.downloader.createDownload(
 					sourceUrl, {
 						filename: destinationUrl,
@@ -292,7 +294,7 @@ function download(item) {
 					(file, status) => {
 						//file为下载的文件对象
 						if (status == 200) {
-							item.LocalUrl = file.filename;
+							item.localUrl = file.filename;
 							resolve(true);
 						} else {
 							uni.showToast({
@@ -300,7 +302,7 @@ function download(item) {
 								title: `${item.Content}下载失败`,
 								duration: 3000
 							});
-							item.Progress = 0;
+							item.progress = 0;
 							reject();
 						}
 					});
@@ -309,7 +311,7 @@ function download(item) {
 				downloadTask.setRequestHeader("Authorization", userInfo && userInfo.Token || "");
 				downloadTask.addEventListener("statechanged", (download, status) => {
 					// 监听下载进度
-					item.Progress = parseInt((download.downloadedSize / download.totalSize) * 100);
+					item.progress = parseInt((download.downloadedSize / download.totalSize) * 100);
 				});
 				downloadTask.start();
 			});

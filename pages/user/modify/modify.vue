@@ -34,9 +34,10 @@
 		},
 		methods: {
 			async getUserInfo() {
-				let resdata = await this.$api.getSelfUserInfo();
+				let resdata = await this.$api.getSelfUserInfo(null, false);
 				if (!resdata) return;
 				this.user = resdata;
+				this.$store.commit("setUserInfo", resdata);
 			},
 
 			async uploadImage() {
@@ -74,6 +75,7 @@
 					icon: "none",
 					title: "资料更新成功"
 				});
+				this.getUserInfo();
 				// setTimeout(() => {
 				// 	this.getUserInfo();
 				// }, 600);

@@ -4,7 +4,7 @@
 			<view class="profile flex-between flex-y-center" @tap="toModify">
 				<view class="flex-y-center">
 					<view class="avatar">
-						<image v-if="user.avatar" :src="`${BaseUrl.file}image/${user.avatar}`" mode="aspectFill">
+						<image v-if="user.avatar" :src="BaseUrl.file+user.avatar" mode="aspectFill">
 						</image>
 					</view>
 					<view class="nick-name">
@@ -39,10 +39,11 @@
 		},
 		methods: {
 			async getUserInfo() {
-				let resdata = await this.$api.getSelfUserInfo({}, false);
+				let resdata = await this.$api.getSelfUserInfo(null, false);
 				if (!resdata) return;
 				this.user = resdata;
 				this.$store.commit("setUserInfo", resdata);
+				console.log(resdata);
 			},
 			async logout() {
 				uni.showModal({
@@ -52,6 +53,7 @@
 							let resdata = await this.$api.logout();
 							if (!resdata) return;
 							this.$store.commit("setUserInfo", null);
+							uni.clearStorageSync(); //暂调试用，后做选择
 							uni.redirectTo({
 								url: "/pages/user/login/login"
 							});

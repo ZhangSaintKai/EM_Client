@@ -17,7 +17,8 @@
 					<view v-if="item.messageType==='audio'" class="newest-message">[音频]{{item.content}}</view>
 					<view v-if="item.messageType==='image'" class="newest-message">[图片]</view>
 					<view v-if="item.messageType==='video'" class="newest-message">[视频]{{item.content}}</view>
-					<view v-if="!['text','audio','image','video'].includes(item.messageType)" class="newest-message">
+					<view v-if="item.messageType && !['text','audio','image','video'].includes(item.messageType)"
+						class="newest-message">
 						[文件]{{item.content}}
 					</view>
 					<view v-else style="height: 1em;"></view>

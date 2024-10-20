@@ -2,7 +2,7 @@
 	<view class="root">
 		<view class="item flex-y-center" v-for="item in contactList" :key="item.contactId" @tap="selectContact(item)">
 			<view class="avatar">
-				<image :src="`${BaseUrl.file}image/${item.contactUser.avatar}`" mode="aspectFill"></image>
+				<image :src="BaseUrl.file+item.contactUser.avatar" mode="aspectFill"></image>
 			</view>
 			<view class="nick-name">
 				{{item.remark}}
@@ -27,7 +27,7 @@
 		},
 		methods: {
 			async getList() {
-				let resdata = await this.$api.getContactList({}, false);
+				let resdata = await this.$api.getContactList(null, false);
 				if (!resdata) return;
 				this.contactList = resdata;
 			},
