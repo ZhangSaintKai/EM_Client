@@ -1,0 +1,33 @@
+{
+    "printWidth": 160,
+    "tabWidth": 4,
+    "useTabs": false,
+    "semi": true,
+    "singleQuote": false,
+    "quoteProps": "as-needed",
+    "jsxSingleQuote": false,
+    "trailingComma": "none",
+    "bracketSpacing": true,
+    "bracketSameLine": false,
+    "arrowParens": "always",
+    "proseWrap": "preserve",
+    "htmlWhitespaceSensitivity": "ignore",
+    "vueIndentScriptAndStyle": false,
+    "endOfLine": "auto",
+    "embeddedLanguageFormatting": "auto",
+    "singleAttributePerLine": false,
+    "overrides": [
+        {
+            "files": ["*.nvue", "*.ux", "*.uvue"],
+            "options": {
+                "parser": "vue"
+            }
+        },
+        {
+            "files": "*.uts",
+            "options": {
+                "parser": "typescript"
+            }
+        }
+    ]
+}

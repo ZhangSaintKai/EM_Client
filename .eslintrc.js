@@ -1,4 +1,3 @@
-//详细配置教程请参考：http://eslint.cn/docs/user-guide/configuring
 module.exports = {
 	"plugins": [
 		"html"
@@ -113,9 +112,10 @@ module.exports = {
 		"vue/valid-v-text": "error",
 		"vue/comment-directive": 0
 	}
+	// 可读的全局变量，不提示未定义
 	// "globals": {
 	// 	"process": true,
 	// 	"module": true,
-	// 	"uni": true,
+	// 	"uni": true
 	// }
 };
