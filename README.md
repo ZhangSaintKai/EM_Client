@@ -5,7 +5,7 @@
 * 安装：npm install nrm -g
 * 列出可用源：nrm ls
 * 切换可用源：nrm use registry
-#### 安装eslint-js、eslint-plugin-vue、prettier插件
+#### 安装HbuilderX的eslint-js、eslint-plugin-vue、prettier插件
 * eslint校验js
 * prettier格式化（HBuilderX自带的jsbeautify格式化vue不全面）
 #### 安装依赖
