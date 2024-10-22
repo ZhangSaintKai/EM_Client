@@ -11,8 +11,8 @@ module.exports = {
 		"allowImportExportEverywhere": false
 	},
 	"extends": [
-		"eslint:recommended",
-		"plugin:vue/base"
+		"eslint:recommended", // 一般内容
+		"plugin:vue/base" // vue内容
 	],
 	"settings": {
 		"html/html-extensions": [
@@ -49,7 +49,8 @@ module.exports = {
 		"new-parens": ["error", "always"],
 		// 警告类型不安全操作符
 		"eqeqeq": "warn",
-
+		
+		// eslint-plugin-vue插件规则：
 		//在computed properties中禁用异步actions
 		"vue/no-async-in-computed-properties": "error",
 		//不允许重复的keys
