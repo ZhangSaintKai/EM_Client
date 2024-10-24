@@ -30,25 +30,31 @@ module.exports = {
 			".we"
 		]
 	},
+	// 可读的全局变量，不提示未定义
+	// "globals": {
+	// 	"process": true,
+	// 	"module": true,
+	// 	"uni": true
+	// },
 	"rules": {
 		// 句末需要分号
 		"semi": ["error", "always"],
 		// 字符串使用双引号
 		"quotes": ["error", "double"],
-		// 允许未声明变量，如uni
+		// 允许未声明变量
 		"no-undef": "off",
 		// 警告未使用变量
-		"no-unused-vars": ["warn", {"args": "all"}],
+		"no-unused-vars": ["error", {"args": "all"}],
 		// 禁用拖尾逗号
 		"comma-dangle": ["error", "never"],
 		// 警告嵌套的三元表达式
-		"no-nested-ternary": "warn",
+		"no-nested-ternary": "error",
 		// 警告超过四层的嵌套
-		"max-depth": ["warn", 4],
+		"max-depth": ["error", 4],
 		// 调用无参构造时需加括号
 		"new-parens": ["error", "always"],
 		// 警告类型不安全操作符
-		"eqeqeq": "warn",
+		"eqeqeq": "error",
 		
 		// eslint-plugin-vue插件规则：
 		//在computed properties中禁用异步actions
@@ -56,7 +62,7 @@ module.exports = {
 		//不允许重复的keys
 		"vue/no-dupe-keys": "error",
 		//不允许重复的attributes
-		"vue/no-duplicate-attributes": "warn",
+		"vue/no-duplicate-attributes": "error",
 		//在 <template> 标签下不允许解析错误
 		"vue/no-parsing-error": ["error", {
 			"x-invalid-end-tag": false
@@ -68,11 +74,11 @@ module.exports = {
 		//不允许在computed properties中出现副作用。
 		"vue/no-side-effects-in-computed-properties": "error",
 		//<template>不允许key属性
-		"vue/no-template-key": "warn",
+		"vue/no-template-key": "error",
 		//在 <textarea> 中不允许mustaches
 		"vue/no-textarea-mustache": "error",
 		//不允许在v-for或者范围内的属性出现未使用的变量定义
-		"vue/no-unused-vars": "warn",
+		"vue/no-unused-vars": "error",
 		//<component>标签需要v-bind:is属性
 		"vue/require-component-is": "error",
 		// render 函数必须有一个返回值
@@ -113,10 +119,4 @@ module.exports = {
 		"vue/valid-v-text": "error",
 		"vue/comment-directive": 0
 	}
-	// 可读的全局变量，不提示未定义
-	// "globals": {
-	// 	"process": true,
-	// 	"module": true,
-	// 	"uni": true
-	// }
 };

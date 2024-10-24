@@ -52,7 +52,7 @@ module.exports = {
 
 		// 请求失败（已在拦截器的失败回调中处理）
 		if (error) return false;
-		
+
 		// 响应异常
 		if (response.statusCode !== 200) {
 			let content = "";
