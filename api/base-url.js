@@ -1,3 +1,9 @@
+/**
+ * 调用匿名函数
+ * (function (param?){
+ * statement
+ * }(param?))
+ */
 module.exports = (() => {
 
 	/* aliyun */
