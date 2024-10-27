@@ -183,8 +183,8 @@ export default {
             // 【利用自增消息Id去除客户端与服务器重复部分消息】
             let clientNewestMessage = this.messages.slice(-1)[0];
             if (clientNewestMessage) {
-                let id = parseInt(clientNewestMessage.messageId.slice(1));
-                resdata = resdata.filter((elm) => parseInt(elm.messageId.slice(1)) > id);
+                let id = Number(clientNewestMessage.messageId.slice(1));
+                resdata = resdata.filter((elm) => Number(elm.messageId.slice(1)) > id);
             }
             // 【利用自增消息Id去除客户端与服务器重复部分消息】
             this.messages = this.messages.concat(resdata);
