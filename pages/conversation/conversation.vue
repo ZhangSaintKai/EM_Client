@@ -101,7 +101,7 @@ export default {
                 }
             });
             this.conversationList = resdata;
-            console.log(this.conversationList);
+            // console.log(this.conversationList);
         },
         selectConversation(item) {
             this.$store.commit("setChat", item);

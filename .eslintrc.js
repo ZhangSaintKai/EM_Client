@@ -55,6 +55,8 @@ module.exports = {
 		"new-parens": ["error", "always"],
 		// 警告类型不安全操作符
 		"eqeqeq": "error",
+		// 警告使用let声明且未被重新赋值的变量
+		// "prefer-const":"error",
 		
 		// eslint-plugin-vue插件规则：
 		//在computed properties中禁用异步actions

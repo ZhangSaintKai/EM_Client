@@ -2,12 +2,7 @@
     <view class="container" :style="{ height: containerHeight + 'px' }">
         <scroll-view class="message-list" scroll-y="true" :scroll-top="scrollBottomHeight">
             <view style="height: 40rpx"></view>
-            <view
-                v-for="(item, index) in messages"
-                :key="item.messageId"
-                class="flex message"
-                :class="item.memberId === chat.otherMemberId ? 'otherSide' : 'me'"
-            >
+            <view v-for="item in messages" :key="item.messageId" class="flex message" :class="item.memberId === chat.otherMemberId ? 'otherSide' : 'me'">
                 <view v-if="item.memberId === chat.otherMemberId" class="avatar">
                     <image :src="BaseUrl.file + chat.otherUser.avatar" mode="aspectFill" />
                 </view>
@@ -93,7 +88,7 @@ export default {
         };
     },
     watch: {
-        video(newValue, oldValue) {
+        video(newValue) {
             if (newValue) {
                 uni.setNavigationBarColor({
                     frontColor: "#ffffff",
@@ -112,8 +107,11 @@ export default {
                 });
             }
         },
-        messages(newValue, oldValue) {
-            console.log(newValue);
+        messages: {
+            // handler: function (newValue, oldValue) {
+            //     console.log(newValue);
+            // },
+            // deep: true
         }
     },
     onLoad() {
@@ -189,7 +187,6 @@ export default {
             // 【利用自增消息Id去除客户端与服务器重复部分消息】
             this.messages = this.messages.concat(resdata);
             uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
-            console.log("已添加到本地消息");
             // 向服务器确认已接收消息
             this.$api.readPrivateMessage(JSON.stringify(this.chat.conversationId), false);
             this.$nextTick(() => {
@@ -259,7 +256,7 @@ export default {
             uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
         },
         videoError(e) {
-            console.log("视频出错", this.video.localUrl, this.video.source);
+            console.log("视频出错", this.video.localUrl, this.video.source, e.errMsg);
         },
         longPressVideo(item) {
             // 长按保存到用户文件管理器下的目录
@@ -369,10 +366,13 @@ export default {
             if (message.progress !== 100) message.progress = 100;
             // 把文件信息发给服务端
             let resdata = await this.$api.sendPrivateMessage(message, false);
-            if (!resdata) return;
+            if (!resdata) {
+                message.sendFailed = true;
+                return;
+            }
             // 更新本地消息文件信息
-            // message.messageId = resdata.message.messageId;
-            // message.sendTime = resdata.message.sendTime;
+            message.messageId = resdata.messageId;
+            message.sendTime = resdata.sendTime;
             if (message.progress !== 100) message.progress = 100;
             uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
         },
@@ -389,18 +389,20 @@ export default {
             };
             // 字符串消息加入本地列表(传递引用)
             this.messages.push(message);
-            let content = this.inputValue;
             this.inputValue = "";
             this.$nextTick(() => {
                 this.scrollBottomHeight = this.messages.length * 500 + this.containerHeight;
             });
             // 发给服务端
             let resdata = await this.$api.sendPrivateMessage(message, false);
-            if (!resdata) return;
+            if (!resdata) {
+                message.sendFailed = true;
+                return;
+            }
             // 更新本地消息文本信息
-            // message.messageId = resdata.message.messageId;
-            // message.sendTime = resdata.message.sendTime;
-            // uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
+            message.messageId = resdata.messageId;
+            message.sendTime = resdata.sendTime;
+            uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
         }
     },
 
