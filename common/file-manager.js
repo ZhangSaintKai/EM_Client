@@ -177,7 +177,7 @@ function upload(file, ownerId, ownerType = 0) {
 			// 	ownerType:ownerType
 			// },
 			name: "EM_Client_File",
-			timeout: 600000, // 超时时间设置为十分钟
+			timeout: 10 * 60 * 1000, // 超时时间设置为十分钟
 			// 如果希望返回一个uploadTask对象，需要至少传入success/fail/complete参数中的一个
 			success: (res) => {
 				if (res.statusCode === 200) {
