@@ -24,8 +24,9 @@ module.exports = (() => {
 	// const http = "https://192.168.110.105:26400";
 	// const ws = "wss://192.168.110.105:26400";
 
-	const file = `${http}/File/GetFile?fileId=`;
-	// 					  File/GetFile?fileId=xxxxxxxxx&fileToken=xxxxxxxxxx
+	let file = `${http}/File/GetFile?fileId=`;
+	const userInfo = uni.getStorageSync("userInfo");
+	file = file.replace("fileId=", `fileToken=${userInfo?.fileToken}&fileId=`);
 
 	return {
 		http,

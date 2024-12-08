@@ -36,7 +36,7 @@ export default {
             if (!resdata) return;
             this.user = resdata;
             this.$store.commit("setUserInfo", resdata);
-            console.log(resdata);
+            // console.log(resdata);
         },
         async logout() {
             uni.showModal({

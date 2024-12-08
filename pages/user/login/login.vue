@@ -57,6 +57,7 @@ export default {
                             false
                         );
                         if (!resdata) return;
+						this.BaseUrl.file = this.BaseUrl.file.replace("fileId=", `fileToken=${resdata.fileToken}&fileId=`);
                         this.$store.commit("setUserInfo", resdata);
                         uni.sendSocketMessage({
                             data: resdata.token
@@ -71,6 +72,7 @@ export default {
                 return;
             }
             // 登录成功
+			this.BaseUrl.file = this.BaseUrl.file.replace("fileId=", `fileToken=${resdata.fileToken}&fileId=`);
             this.$store.commit("setUserInfo", resdata);
             uni.sendSocketMessage({
                 data: resdata.token

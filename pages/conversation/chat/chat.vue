@@ -106,13 +106,13 @@ export default {
                     title: this.chat.remark || this.chat.otherUser.nickName
                 });
             }
-        },
-        messages: {
+        }
+        // ,messages: {
             // handler: function (newValue, oldValue) {
             //     console.log(newValue);
             // },
             // deep: true
-        }
+        // }
     },
     onLoad() {
         uni.getSystemInfo({

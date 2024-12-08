@@ -157,8 +157,8 @@ function chooseFile() {
 /**
  * 文件上传方法
  * @param {Object} file	{name: string, url: string} 文件信息对象
- * @param {String} 文件所属Id
- * @param {Number} 文件所属类型
+ * @param {String} ownerId 文件所属Id
+ * @param {Number} ownerType 文件所属类型 (0：公开，无限制，1：指定会话内，2：指定会话成员，3：指定用户)
  * @returns {Promise} 文件上传执行结果
  */
 function upload(file, ownerId, ownerType = 0) {
