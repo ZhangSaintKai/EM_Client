@@ -57,11 +57,11 @@ export default {
                             false
                         );
                         if (!resdata) return;
-						this.BaseUrl.file = this.BaseUrl.file.replace("fileId=", `fileToken=${resdata.fileToken}&fileId=`);
                         this.$store.commit("setUserInfo", resdata);
                         uni.sendSocketMessage({
                             data: resdata.token
                         });
+						this.BaseUrl.file = this.BaseUrl.file.replace("fileId=", `fileToken=${resdata.fileToken}&fileId=`);
                         setTimeout(() => {
                             uni.switchTab({
                                 url: "/pages/conversation/conversation"
@@ -72,7 +72,6 @@ export default {
                 return;
             }
             // 登录成功
-			this.BaseUrl.file = this.BaseUrl.file.replace("fileId=", `fileToken=${resdata.fileToken}&fileId=`);
             this.$store.commit("setUserInfo", resdata);
             uni.sendSocketMessage({
                 data: resdata.token
@@ -81,6 +80,7 @@ export default {
             // 	icon: "none",
             // 	title: "正在登录"
             // });
+			this.BaseUrl.file = this.BaseUrl.file.replace("fileId=", `fileToken=${resdata.fileToken}&fileId=`);
             setTimeout(() => {
                 uni.switchTab({
                     url: "/pages/conversation/conversation"

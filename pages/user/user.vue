@@ -47,7 +47,9 @@ export default {
                         if (!resdata) return;
                         this.$store.commit("setUserInfo", null);
                         uni.clearStorageSync(); //暂调试用，后做选择
-                        uni.redirectTo({
+						// bug：退出登录未重启再重新登录时，fileToken未更新
+						this.BaseUrl.file = `${http}/File/GetFile?fileId=`;
+                        uni.reLaunch({
                             url: "/pages/user/login/login"
                         });
                     }

@@ -162,7 +162,7 @@ function chooseFile() {
  * @returns {Promise} 文件上传执行结果
  */
 function upload(file, ownerId, ownerType = 0) {
-	console.log(file);
+	// console.log(file);
 	return new Promise((resolve, reject) => {
 		let userInfo = store.getters.getUserInfo;
 		// 此API不限制上传文件大小

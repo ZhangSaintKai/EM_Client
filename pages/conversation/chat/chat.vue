@@ -357,8 +357,7 @@ export default {
             }, 1000);
             // 上传文件
             // console.log(file);
-            // let resFile = await this.FileManager.upload(file, this.chat.conversationId, 1);
-            let resFile = await this.FileManager.upload(file, this.chat.conversationId, 0);
+            let resFile = await this.FileManager.upload(file, this.chat.conversationId, 1);
             if (!resFile) return;
             message.conversationId = this.chat.conversationId;
             message.source = resFile.fileId;
