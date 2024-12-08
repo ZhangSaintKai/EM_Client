@@ -49,19 +49,22 @@ export default {
                             icon: "none",
                             title: "注册成功，正在登录"
                         });
-                        resdata = await this.$api.login(
+                        resdataLog = await this.$api.login(
                             {
                                 username: this.username,
                                 password: this.password
                             },
                             false
                         );
-                        if (!resdata) return;
-                        this.$store.commit("setUserInfo", resdata);
+                        if (!resdataLog) return;
+                        this.$store.commit("setUserInfo", resdataLog);
                         uni.sendSocketMessage({
-                            data: resdata.token
+                            data: resdataLog.token
                         });
-						this.BaseUrl.file = this.BaseUrl.file.replace("fileId=", `fileToken=${resdata.fileToken}&fileId=`);
+						this.BaseUrl.file = this.BaseUrl.file.replace("fileId=", `fileToken=${resdataLog.fileToken}&fileId=`);
+						const publicKey = uni.getStorageSync("publicKey");
+						const resdataKey = await this.$api.updateUserPublicKey(JSON.stringify(publicKey));
+						if(!resdataKey) return;
                         setTimeout(() => {
                             uni.switchTab({
                                 url: "/pages/conversation/conversation"
@@ -81,6 +84,9 @@ export default {
             // 	title: "正在登录"
             // });
 			this.BaseUrl.file = this.BaseUrl.file.replace("fileId=", `fileToken=${resdata.fileToken}&fileId=`);
+			const publicKey = uni.getStorageSync("publicKey");
+			const resdataKey = await this.$api.updateUserPublicKey(JSON.stringify(publicKey));
+			if (!resdataKey) return;
             setTimeout(() => {
                 uni.switchTab({
                     url: "/pages/conversation/conversation"

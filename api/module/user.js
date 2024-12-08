@@ -28,6 +28,9 @@ const api = {
 	updateUserPassword(payload, showLoading = true) {
 		return http.request("POST", "User/UpdatePassword", "修改密码", payload, showLoading);
 	},
+	updateUserPublicKey(payload, showLoading = true) {
+		return http.request("POST", "User/UpdatePublicKey", "更新公钥", payload, showLoading);
+	},
 	logout(payload = null, showLoading = true) {
 		return http.request("GET", "User/Logout", "退出登录", payload, showLoading);
 	}

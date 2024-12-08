@@ -1,70 +1,70 @@
 <template>
-    <view class="container" :style="{ height: containerHeight + 'px' }">
-        <scroll-view class="message-list" scroll-y="true" :scroll-top="scrollBottomHeight">
-            <view style="height: 40rpx"></view>
-            <view v-for="item in messages" :key="item.messageId" class="flex message" :class="item.memberId === chat.otherMemberId ? 'otherSide' : 'me'">
-                <view v-if="item.memberId === chat.otherMemberId" class="avatar">
-                    <image :src="BaseUrl.file + chat.otherUser.avatar" mode="aspectFill" />
-                </view>
-                <view v-if="item.messageType === 'text'" class="content-text">
-                    {{ item.content }}
-                </view>
-                <view v-else>
-                    <view v-if="item.messageType === 'image'" class="image">
-                        <!-- 发送时显示进度 -->
-                        <image
-                            :src="item.progress && item.progress !== 100 ? item.source : BaseUrl.file + item.source"
-                            mode="heightFix"
-                            @tap="previewImage(item)"
-                        ></image>
-                        <view v-if="item.progress && item.progress !== 100" class="progress">{{ item.progress }}%</view>
-                    </view>
-                    <view v-if="item.messageType === 'video'" class="video">
-                        <image src="../../../static/icon/video.png" mode="scaleToFill" @tap="playVideo(item)" @longpress="longPressVideo(item)"></image>
-                        <view class="file-name">
-                            {{ item.content }}
-                        </view>
-                        <view v-if="item.progress > 0 && item.progress < 100" class="progress">{{ item.progress }}%</view>
-                    </view>
-                    <view v-if="!['image', 'video'].includes(item.messageType)" class="file">
-                        <image :src="`../../../static/icon/${item.messageType}.png`" @tap="openFile(item)" mode="scaleToFill"></image>
-                        <view class="file-name">
-                            {{ item.content }}
-                        </view>
-                        <view v-if="item.progress > 0 && item.progress < 100" class="progress">{{ item.progress }}%</view>
-                    </view>
-                </view>
-                <view v-if="item.memberId === chat.memberId" class="avatar">
-                    <image :src="BaseUrl.file + me.avatar" mode="aspectFill" />
-                </view>
-            </view>
-            <view style="height: 30rpx"></view>
-        </scroll-view>
-        <view class="input-bar">
-            <view class="record-audio" @tap="switchRecordAudio">·</view>
-            <textarea v-model="inputValue" placeholder="请输入消息内容" auto-height :adjust-position="false" @focus="chooseMore = false"></textarea>
-            <view v-if="inputValue" class="button send" @tap="sendMessage">发送</view>
-            <view v-else class="plus" @tap="chooseMore = !chooseMore">+</view>
-        </view>
-        <view v-if="chooseMore" class="flex-around more">
-            <view class="item" @tap="chooseImage">
-                <image src="../../../static/icon/image.png" mode="scaleToFill"></image>
-                <view class="image">图片</view>
-            </view>
-            <view class="item" @tap="chooseVideo">
-                <image src="../../../static/icon/video.png" mode="scaleToFill"></image>
-                <view class="video">视频</view>
-            </view>
-            <!-- <view class="item" @tap="fileSelectorOpen=true"> -->
-            <view class="item" @tap="chooseFile">
-                <image src="../../../static/icon/file.png" mode="scaleToFill"></image>
-                <view class="other">文件</view>
-                <!-- <custom-select-file ref="fileselector" v-model="fileSelectorOpen" @confirm="getFiles"
+	<view class="container" :style="{ height: containerHeight + 'px' }">
+		<scroll-view class="message-list" scroll-y="true" :scroll-top="scrollBottomHeight">
+			<view style="height: 40rpx"></view>
+			<view v-for="item in messages" :key="item.messageId" class="flex message" :class="item.memberId === chat.otherMemberId ? 'otherSide' : 'me'">
+				<view v-if="item.memberId === chat.otherMemberId" class="avatar">
+					<image :src="BaseUrl.file + chat.otherUser.avatar" mode="aspectFill" />
+				</view>
+				<view v-if="item.messageType === 'text'" class="content-text">
+					{{ item.content }}
+				</view>
+				<view v-else>
+					<view v-if="item.messageType === 'image'" class="image">
+						<!-- 发送时显示进度 -->
+						<image
+							:src="item.progress && item.progress !== 100 ? item.source : BaseUrl.file + item.source"
+							mode="heightFix"
+							@tap="previewImage(item)"
+						></image>
+						<view v-if="item.progress && item.progress !== 100" class="progress">{{ item.progress }}%</view>
+					</view>
+					<view v-if="item.messageType === 'video'" class="video">
+						<image src="../../../static/icon/video.png" mode="scaleToFill" @tap="playVideo(item)" @longpress="longPressVideo(item)"></image>
+						<view class="file-name">
+							{{ item.content }}
+						</view>
+						<view v-if="item.progress > 0 && item.progress < 100" class="progress">{{ item.progress }}%</view>
+					</view>
+					<view v-if="!['image', 'video'].includes(item.messageType)" class="file">
+						<image :src="`../../../static/icon/${item.messageType}.png`" @tap="openFile(item)" mode="scaleToFill"></image>
+						<view class="file-name">
+							{{ item.content }}
+						</view>
+						<view v-if="item.progress > 0 && item.progress < 100" class="progress">{{ item.progress }}%</view>
+					</view>
+				</view>
+				<view v-if="item.memberId === chat.memberId" class="avatar">
+					<image :src="BaseUrl.file + me.avatar" mode="aspectFill" />
+				</view>
+			</view>
+			<view style="height: 30rpx"></view>
+		</scroll-view>
+		<view class="input-bar">
+			<view class="record-audio" @tap="switchRecordAudio">·</view>
+			<textarea v-model="inputValue" placeholder="请输入消息内容" auto-height :adjust-position="false" @focus="chooseMore = false"></textarea>
+			<view v-if="inputValue" class="button send" @tap="sendMessage">发送</view>
+			<view v-else class="plus" @tap="chooseMore = !chooseMore">+</view>
+		</view>
+		<view v-if="chooseMore" class="flex-around more">
+			<view class="item" @tap="chooseImage">
+				<image src="../../../static/icon/image.png" mode="scaleToFill"></image>
+				<view class="image">图片</view>
+			</view>
+			<view class="item" @tap="chooseVideo">
+				<image src="../../../static/icon/video.png" mode="scaleToFill"></image>
+				<view class="video">视频</view>
+			</view>
+			<!-- <view class="item" @tap="fileSelectorOpen=true"> -->
+			<view class="item" @tap="chooseFile">
+				<image src="../../../static/icon/file.png" mode="scaleToFill"></image>
+				<view class="other">文件</view>
+				<!-- <custom-select-file ref="fileselector" v-model="fileSelectorOpen" @confirm="getFiles"
 					btnBgColor="#55aaff" btnText="确定" :filterArr="[]"></custom-select-file> -->
-            </view>
-        </view>
-        <video v-if="video" :src="video.localUrl || BaseUrl.file + video.source" autoplay @error="videoError" object-fit="cover"></video>
-    </view>
+			</view>
+		</view>
+		<video v-if="video" :src="video.localUrl || BaseUrl.file + video.source" autoplay @error="videoError" object-fit="cover"></video>
+	</view>
 </template>
 
 <script>
@@ -175,9 +175,6 @@ export default {
             );
             this.scrollBottomHeight = this.messages.length * 500 + this.containerHeight;
             if (!resdata) return;
-            resdata.forEach((elm) => {
-                if (elm.messageType !== "text") elm.progress = 0;
-            });
             // 【利用自增消息Id去除客户端与服务器重复部分消息】
             let clientNewestMessage = this.messages.slice(-1)[0];
             if (clientNewestMessage) {
@@ -185,6 +182,18 @@ export default {
                 resdata = resdata.filter((elm) => Number(elm.messageId.slice(1)) > id);
             }
             // 【利用自增消息Id去除客户端与服务器重复部分消息】
+            resdata.forEach((elm) => {
+                if (elm.messageType !== "text") elm.progress = 0;
+				try{
+					elm.content = this.Encrypt.decrypt(elm.content);
+				} catch (e) {
+					uni.showModal({
+						title: "解密失败",
+						content: `${e.errMsg || e}`,
+						showCancel: false
+					});
+				}
+            });
             this.messages = this.messages.concat(resdata);
             uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
             // 向服务器确认已接收消息
@@ -393,7 +402,18 @@ export default {
                 this.scrollBottomHeight = this.messages.length * 500 + this.containerHeight;
             });
             // 发给服务端
-            let resdata = await this.$api.sendPrivateMessage(message, false);
+			let tempMessage = {};
+			try {
+				Object.assign(tempMessage, message);
+				tempMessage.content = this.Encrypt.encrypt(this.chat.otherUser.publicKey, tempMessage.content);
+			} catch (e) {
+				uni.showModal({
+					title: "加密失败",
+					content: `${e.errMsg || e}`,
+					showCancel: false
+				});
+			}
+            let resdata = await this.$api.sendPrivateMessage(tempMessage, false);
             if (!resdata) {
                 message.sendFailed = true;
                 return;
@@ -433,186 +453,186 @@ export default {
 
 <style lang="scss" scoped>
 .container {
-    font-size: 14px;
-    background: $color-background;
-    display: flex;
-    flex-direction: column;
+	font-size: 14px;
+	background: $color-background;
+	display: flex;
+	flex-direction: column;
 }
 
 .message-list {
-    flex: 1;
-    overflow-y: auto;
+	flex: 1;
+	overflow-y: auto;
 
-    .message {
-        align-items: flex-end;
-        margin-bottom: 20rpx;
+	.message {
+		align-items: flex-end;
+		margin-bottom: 20rpx;
 
-        .avatar {
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
+		.avatar {
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-end;
 
-            image {
-                width: 3em;
-                height: 3em;
-                border-radius: 50%;
-                margin: 0 0.5em;
-            }
-        }
+			image {
+				width: 3em;
+				height: 3em;
+				border-radius: 50%;
+				margin: 0 0.5em;
+			}
+		}
 
-        .content-text {
-            font-size: 16px;
-            max-width: 60%;
-            background: #ffffff;
-            padding: 0.3em 0.6em;
-            border-radius: 0.6em;
-            white-space: normal;
-            word-break: break-all;
-        }
+		.content-text {
+			font-size: 16px;
+			max-width: 60%;
+			background: #ffffff;
+			padding: 0.3em 0.6em;
+			border-radius: 0.6em;
+			white-space: normal;
+			word-break: break-all;
+		}
 
-        .image {
-            border-radius: 0.3em;
-            text-align: right;
-            position: relative;
+		.image {
+			border-radius: 0.3em;
+			text-align: right;
+			position: relative;
 
-            image {
-                height: 252rpx; // 16:9比例的图片不变形
-                max-width: 450rpx;
-                border-radius: 0.3em;
-                margin-bottom: -0.4em;
-                will-change: transform;
-            }
-        }
+			image {
+				height: 252rpx; // 16:9比例的图片不变形
+				max-width: 450rpx;
+				border-radius: 0.3em;
+				margin-bottom: -0.4em;
+				will-change: transform;
+			}
+		}
 
-        .video {
-            border-radius: 0.4em;
-            text-align: center;
-            position: relative;
+		.video {
+			border-radius: 0.4em;
+			text-align: center;
+			position: relative;
 
-            image {
-                width: 160rpx;
-                height: 160rpx;
-                border-radius: 0.3em;
-                margin-bottom: -0.4em;
-            }
+			image {
+				width: 160rpx;
+				height: 160rpx;
+				border-radius: 0.3em;
+				margin-bottom: -0.4em;
+			}
 
-            .progress {
-                color: $color-primary;
-            }
-        }
+			.progress {
+				color: $color-primary;
+			}
+		}
 
-        .file {
-            border-radius: 0.4em;
-            width: 160rpx;
-            padding: 0.1em;
-            background: #ffffff;
-            text-align: center;
-            position: relative;
+		.file {
+			border-radius: 0.4em;
+			width: 160rpx;
+			padding: 0.1em;
+			background: #ffffff;
+			text-align: center;
+			position: relative;
 
-            image {
-                width: 100rpx;
-                height: 120rpx;
-                border-radius: 0.3em;
-                margin-bottom: -0.4em;
-            }
-        }
+			image {
+				width: 100rpx;
+				height: 120rpx;
+				border-radius: 0.3em;
+				margin-bottom: -0.4em;
+			}
+		}
 
-        .file-name {
-            font-size: 10px;
-            width: 160rpx;
-            /* 设置容器的固定宽度 */
-            overflow: hidden;
-            /* 隐藏溢出的文本 */
-            white-space: nowrap;
-            /* 强制文本在一行显示 */
-            text-overflow: ellipsis;
-            /* 使用省略号表示溢出的文本 */
-        }
+		.file-name {
+			font-size: 10px;
+			width: 160rpx;
+			/* 设置容器的固定宽度 */
+			overflow: hidden;
+			/* 隐藏溢出的文本 */
+			white-space: nowrap;
+			/* 强制文本在一行显示 */
+			text-overflow: ellipsis;
+			/* 使用省略号表示溢出的文本 */
+		}
 
-        .progress {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-    }
+		.progress {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+		}
+	}
 
-    .me {
-        justify-content: flex-end;
+	.me {
+		justify-content: flex-end;
 
-        .content-text,
-        .file {
-            color: #ffffff;
-            background: $color-primary;
-        }
-    }
+		.content-text,
+		.file {
+			color: #ffffff;
+			background: $color-primary;
+		}
+	}
 
-    .otherSide {
-        justify-content: flex-start;
-    }
+	.otherSide {
+		justify-content: flex-start;
+	}
 }
 
 .input-bar {
-    display: flex;
-    align-items: flex-end;
-    padding: 16rpx;
-    background: #ffffff;
+	display: flex;
+	align-items: flex-end;
+	padding: 16rpx;
+	background: #ffffff;
 
-    .record-audio {
-        font-size: 34px;
-        width: 1em;
-        height: 1em;
-        border-radius: 50%;
-        text-align: center;
-        line-height: 0.9em;
-        color: $color-primary;
-        background: $color-background;
-        margin-bottom: 0.1em;
-    }
+	.record-audio {
+		font-size: 34px;
+		width: 1em;
+		height: 1em;
+		border-radius: 50%;
+		text-align: center;
+		line-height: 0.9em;
+		color: $color-primary;
+		background: $color-background;
+		margin-bottom: 0.1em;
+	}
 
-    textarea {
-        height: 1em;
-        flex: 1;
-        background: #f5f5f5;
-        border-radius: 1.2em;
-        margin: 4rpx 10rpx;
-        padding: 0.4em 0.6em;
-    }
+	textarea {
+		height: 1em;
+		flex: 1;
+		background: #f5f5f5;
+		border-radius: 1.2em;
+		margin: 4rpx 10rpx;
+		padding: 0.4em 0.6em;
+	}
 
-    .plus {
-        font-size: 34px;
-        // font-weight: bold;
-        width: 1em;
-        height: 1em;
-        border-radius: 50%;
-        text-align: center;
-        line-height: 0.9em;
-        color: #ffffff;
-        background: $color-primary;
-        margin-bottom: 3rpx;
-    }
+	.plus {
+		font-size: 34px;
+		// font-weight: bold;
+		width: 1em;
+		height: 1em;
+		border-radius: 50%;
+		text-align: center;
+		line-height: 0.9em;
+		color: #ffffff;
+		background: $color-primary;
+		margin-bottom: 3rpx;
+	}
 
-    .send {
-        width: 3em;
-    }
+	.send {
+		width: 3em;
+	}
 }
 
 .more {
-    background: #ffffff;
+	background: #ffffff;
 
-    image {
-        width: 60rpx;
-        height: 60rpx;
-        // border-radius: 12rpx;
-    }
+	image {
+		width: 60rpx;
+		height: 60rpx;
+		// border-radius: 12rpx;
+	}
 }
 
 video {
-    width: 100vw;
-    height: 100vh;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+	width: 100vw;
+	height: 100vh;
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 }
 </style>

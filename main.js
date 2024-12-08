@@ -19,6 +19,8 @@ import BaseUrl from "@/api/base-url.js";
 Vue.prototype.BaseUrl = BaseUrl;
 import FileManager from "@/common/file-manager.js";
 Vue.prototype.FileManager = FileManager;
+import Encrypt from "@/common/encrypt.js";
+Vue.prototype.Encrypt = Encrypt;
 
 
 
