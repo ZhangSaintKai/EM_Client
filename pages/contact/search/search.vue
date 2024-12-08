@@ -32,16 +32,16 @@ export default {
     methods: {
         async search() {
             if (!this.searchText) return;
-            let response = await this.$api.searchUser({
+            let resdata = await this.$api.searchUser({
                 searchText: this.searchText
             });
-            if (!response) return;
+            if (!resdata) return;
             this.alreadySearched = true;
-            this.userList = response;
+            this.userList = resdata;
         },
         selectUser(item) {
             uni.navigateTo({
-                url: "/pages/contact/profile/profile?userID=" + item.userId
+                url: "/pages/contact/profile/profile?userId=" + item.userId
             });
         }
     }

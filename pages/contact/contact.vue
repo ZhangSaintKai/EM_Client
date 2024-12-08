@@ -31,7 +31,7 @@ export default {
         },
         selectContact(item) {
             uni.navigateTo({
-                url: "/pages/contact/profile/profile?userID=" + item.OtherSide
+                url: "/pages/contact/profile/profile?userId=" + item.contactUser.userId
             });
         },
         toSearch() {

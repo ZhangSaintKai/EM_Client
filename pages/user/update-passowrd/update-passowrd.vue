@@ -47,11 +47,11 @@ export default {
         }, 1000),
 
         async confirmChange() {
-            let response = await this.$api.updateUserPassword({
+            let resdata = await this.$api.updateUserPassword({
                 originalPassword: this.originalPassword,
                 newPassword: this.newPassword
             });
-            if (!response) return;
+            if (!resdata) return;
             uni.showToast({
                 icon: "none",
                 mask: true,

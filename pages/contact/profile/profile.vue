@@ -2,14 +2,14 @@
     <view class="root">
         <view class="container flex-column-x-center">
             <view class="avatar">
-                <image v-if="user.Avatar" :src="BaseUrl.file + user.avatar" mode="aspectFill"></image>
+                <image v-if="user.avatar" :src="BaseUrl.file + user.avatar" mode="aspectFill"></image>
             </view>
             <view class="nick-name">
-                {{ user.NickName }}
+                {{ user.nickName }}
             </view>
-            <view class="EMID">EMID：{{ user.EMID }}</view>
-            <view v-if="self.EMID !== user.EMID" class="option flex-around">
-                <view v-if="user.IsContact" class="button send" @tap="sendMessage">发送消息</view>
+            <view class="EMID">EMID：{{ user.emid }}</view>
+            <view v-if="self.emid !== user.emid" class="option flex-around">
+                <view v-if="user.isContact" class="button send" @tap="sendMessage">发送消息</view>
                 <view v-else class="button add" @tap="addContact">添加</view>
                 <view class="button ban">拉黑</view>
             </view>
@@ -21,39 +21,48 @@
 export default {
     data() {
         return {
-            userID: "",
-            user: {},
-            self: {}
+            userId: "",
+            user: { isContact: true }
         };
     },
+	computed:{
+		self(){
+			return this.$store.getters.getUserInfo;
+		}
+	},
     onLoad(option) {
-        this.userID = option.userID;
+        this.userId = option.userId;
         this.getUserProfileByID();
-        this.self = this.$store.getters.getUserInfo;
     },
     methods: {
         async getUserProfileByID() {
-            let response = await this.$api.getUserProfileByID({
-                userID: this.userID
+            let resdata = await this.$api.getUserProfileByID({
+                userId: this.userId
             });
-            this.user = response.user;
+            // this.user = resdata;
+			// this.checkContact();
+			this.user = resdata.user;
+			this.user.isContact = resdata.isContact;
+        },
+        async checkContact() {
+            let resdata = await this.$api.checkContact({
+                targetUserId: this.userId
+            });
+            this.user.isContact = resdata;
+			console.log(this.user.isContact);
         },
         async sendMessage() {
-            let response = await this.$api.addPrivateConversation({
-                userID: this.user.UserID
-            });
-            if (!response) return;
+            let resdata = await this.$api.addPrivateConversation(JSON.stringify(this.userId));
+            if (!resdata) return;
             // 获取会话对象
-            this.$store.commit("setChat", response.privateConversation);
+            this.$store.commit("setChat", resdata);
             uni.navigateTo({
                 url: "/pages/conversation/chat/chat"
             });
         },
         async addContact() {
-            let response = await this.$api.addContact({
-                userID: this.user.UserID
-            });
-            if (!response) return;
+            let resdata = await this.$api.addContact(JSON.stringify(this.userId));
+            if (!resdata) return;
             uni.showToast({
                 icon: "none",
                 title: "已添加联系人"

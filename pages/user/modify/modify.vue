@@ -55,7 +55,7 @@ export default {
         },
 
         async updateAvatar(file) {
-            console.log(file);
+            // console.log(file);
             let resA = await this.$api.updateUserAvatar(JSON.stringify(file.fileId));
             if (!resA) return;
             uni.showToast({
