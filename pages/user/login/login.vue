@@ -40,7 +40,7 @@ export default {
                     confirmText: "是",
                     success: async (res) => {
                         if (res.cancel) return;
-                        let resdataReg = await this.$api.register({
+                        const resdataReg = await this.$api.register({
                             username: this.username,
                             password: this.password
                         });
@@ -49,7 +49,7 @@ export default {
                             icon: "none",
                             title: "注册成功，正在登录"
                         });
-                        resdataLog = await this.$api.login(
+                        const resdataLog = await this.$api.login(
                             {
                                 username: this.username,
                                 password: this.password

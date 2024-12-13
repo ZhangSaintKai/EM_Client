@@ -124,9 +124,11 @@ export default {
         // 定义监听接收消息
         uni.onSocketMessage((res) => {
             try {
-                res.data = JSON.parse(res.data);
-                this.messages.push(res.data);
-                uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
+				if (res.data === "服务端已标识WS") return;
+				this.getMessageList();
+                // res.data = JSON.parse(res.data);
+                // this.messages.push(res.data);
+                // uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
                 console.log("WS：已添加到本地消息");
                 // 向服务器确认已接收消息
                 // this.$api.readPrivateMessage({
@@ -136,7 +138,7 @@ export default {
                     this.scrollBottomHeight = this.messages.length * 500 + this.containerHeight;
                 });
             } catch (e) {
-                console.log("会话接收：", res.data);
+                console.log("会话接收：", e, res);
             }
         });
         this.me = this.$store.getters.getUserInfo;
@@ -185,6 +187,8 @@ export default {
             resdata.forEach((elm) => {
                 if (elm.messageType !== "text") elm.progress = 0;
 				try{
+				//暂只解密文本类消息
+					if(elm.messageType === "text")
 					elm.content = this.Encrypt.decrypt(elm.content);
 				} catch (e) {
 					uni.showModal({
@@ -340,6 +344,7 @@ export default {
                     memberId: this.chat.memberId, //用于客户端
                     messageType: elm.type,
                     content: elm.name,
+					signature: elm.name,
                     source: elm.url,
                     replyFor: null,
                     fileId: elm.idinclient,
@@ -403,9 +408,12 @@ export default {
             });
             // 发给服务端
 			let tempMessage = {};
+			let resdata;
 			try {
 				Object.assign(tempMessage, message);
 				tempMessage.content = this.Encrypt.encrypt(this.chat.otherUser.publicKey, tempMessage.content);
+				tempMessage.signature = tempMessage.content;
+				resdata = await this.$api.sendPrivateMessage(tempMessage, false);
 			} catch (e) {
 				uni.showModal({
 					title: "加密失败",
@@ -413,7 +421,6 @@ export default {
 					showCancel: false
 				});
 			}
-            let resdata = await this.$api.sendPrivateMessage(tempMessage, false);
             if (!resdata) {
                 message.sendFailed = true;
                 return;
