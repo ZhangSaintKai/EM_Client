@@ -1,3 +1,4 @@
+#### UniApp项目，基于Vue2构建，使用HbuilderX3.8.7开发工具
 #### Node版本管理工具nvm
 * 下载：https://github.com/coreybutler/nvm-windows/releases
 * 安装Node（版本>= 16.18.0）：nvm install 16.18.0
@@ -13,4 +14,4 @@
 #### 运行到真机/模拟器
 * HbuilderX自带adb位于HBuilderX\plugins\launcher\tools\adbs（可配置到环境变量）
 * 使用HbuilderX运行到MuMu模拟器：adb connect 127.0.0.1:7555
-#### 云打包须使用HbuilderX3.8.7以下的版本（20240201）
+#### 云打包须使用HbuilderX3.8.7版本（20240201）
