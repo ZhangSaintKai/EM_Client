@@ -5,12 +5,13 @@ export default {
     onLaunch: () => {
         // #ifdef APP-PLUS
         plus.runtime.getProperty(plus.runtime.appid, (widgetInfo) => {
+			console.log("this.$api：", this.$api);
             uni.request({
                 url: BaseUrl.http + "/Client/CheckUpdate",
-                method: "POST",
+                method: "GET",
                 data: {
-                    version: widgetInfo.version,
-                    name: widgetInfo.name
+                    version: widgetInfo.version
+                    // ,name: widgetInfo.name
                 },
                 sslVerify: false,
                 success: (response) => {
