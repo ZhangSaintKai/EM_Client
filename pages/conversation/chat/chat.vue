@@ -6,7 +6,7 @@
 				<view v-if="item.memberId === chat.otherMemberId" class="avatar">
 					<image :src="BaseUrl.file + chat.otherUser.avatar" mode="aspectFill" />
 				</view>
-				<view v-if="item.messageType === 'text'" class="content-text">
+				<view v-if="item.messageType === 'text'" class="content-text" @longpress="onLongPressTextMsg(item.content)">
 					{{ item.content }}
 				</view>
 				<view v-else>
@@ -220,6 +220,16 @@ export default {
         // 		}, 100);
         // 	}
         // },
+		
+		async onLongPressTextMsg(content) {
+			await uni.setClipboardData({
+				data: content
+			});
+			uni.showToast({
+				title: "已复制消息",
+				icon: "none"
+			});
+		},
 
         async previewImage(item) {
             // uni.previewImage只支持预览uniapp沙盒目录下的文件，预览时先缓存于应用沙盒目录
