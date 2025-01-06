@@ -1,4 +1,4 @@
-import http from "@/common/request-helper.js";
+import http from "@/api/request.js";
 
 const api = {
 	getPrivateConversationList(payload = null, showLoading = true) {
