@@ -1,11 +1,7 @@
-import http from "@/api/request.js";
-
-const api = {
-	checkUpdate(payload, showLoading = true) {
-		// return http.request("POST", "Update/Check", "检查更新", payload, showLoading);
-	}
-};
+import request from "@/api/request.js";
 
 export default {
-	...api
+	checkUpdate(data) {
+		return request("POST", "Update/Check", "检查更新", data);
+	}
 };

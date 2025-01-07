@@ -27,7 +27,7 @@ export default {
     },
     methods: {
         async login() {
-            let resdata = await this.$api.login({
+            const resdata = await this.$api.login({
                 username: this.username,
                 password: this.password
             });
@@ -49,13 +49,10 @@ export default {
                             icon: "none",
                             title: "注册成功，正在登录"
                         });
-                        const resdataLog = await this.$api.login(
-                            {
+                        const resdataLog = await this.$api.login({
                                 username: this.username,
                                 password: this.password
-                            },
-                            false
-                        );
+                        });
                         if (!resdataLog) return;
                         this.$store.commit("setUserInfo", resdataLog);
                         uni.sendSocketMessage({
@@ -63,7 +60,7 @@ export default {
                         });
 						this.BaseUrl.file = this.BaseUrl.file.replace("fileId=", `fileToken=${resdataLog.fileToken}&fileId=`);
 						const publicKey = uni.getStorageSync("publicKey");
-						const resdataKey = await this.$api.updateUserPublicKey(JSON.stringify(publicKey));
+						const resdataKey = await this.$api.updateUserPublicKey(publicKey);
 						if(!resdataKey) return;
                         setTimeout(() => {
                             uni.switchTab({
@@ -85,7 +82,7 @@ export default {
             // });
 			this.BaseUrl.file = this.BaseUrl.file.replace("fileId=", `fileToken=${resdata.fileToken}&fileId=`);
 			const publicKey = uni.getStorageSync("publicKey");
-			const resdataKey = await this.$api.updateUserPublicKey(JSON.stringify(publicKey));
+			const resdataKey = await this.$api.updateUserPublicKey(publicKey);
 			if (!resdataKey) return;
             setTimeout(() => {
                 uni.switchTab({

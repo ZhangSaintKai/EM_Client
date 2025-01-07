@@ -133,7 +133,7 @@ export default {
                 // 向服务器确认已接收消息
                 // this.$api.readPrivateMessage({
                 // 	readList: [res.data]
-                // }, false);
+                // });
                 this.$nextTick(() => {
                     this.scrollBottomHeight = this.messages.length * 500 + this.containerHeight;
                 });
@@ -169,18 +169,15 @@ export default {
     // 【【【【【本页进行uni.navigateTo跳转时须取消键盘高度监听】】】】
     methods: {
         async getMessageList() {
-            let resdata = await this.$api.getPrivateMessageList(
-                {
+            let resdata = await this.$api.getPrivateMessageList({
                     conversationId: this.chat.conversationId
-                },
-                false
-            );
+            });
             this.scrollBottomHeight = this.messages.length * 500 + this.containerHeight;
             if (!resdata) return;
             // 【利用自增消息Id去除客户端与服务器重复部分消息】
-            let clientNewestMessage = this.messages.slice(-1)[0];
+            const clientNewestMessage = this.messages.slice(-1)[0];
             if (clientNewestMessage) {
-                let id = Number(clientNewestMessage.messageId.slice(1));
+                const id = Number(clientNewestMessage.messageId.slice(1));
                 resdata = resdata.filter((elm) => Number(elm.messageId.slice(1)) > id);
             }
             // 【利用自增消息Id去除客户端与服务器重复部分消息】
@@ -201,7 +198,7 @@ export default {
             this.messages = this.messages.concat(resdata);
             uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
             // 向服务器确认已接收消息
-            this.$api.readPrivateMessage(JSON.stringify(this.chat.conversationId), false);
+            this.$api.readPrivateMessage( this.chat.conversationId );
             this.$nextTick(() => {
                 this.scrollBottomHeight = this.messages.length * 500 + this.containerHeight;
             });
@@ -233,7 +230,7 @@ export default {
 
         async previewImage(item) {
             // uni.previewImage只支持预览uniapp沙盒目录下的文件，预览时先缓存于应用沙盒目录
-            let to = setTimeout(() => {
+            const to = setTimeout(() => {
                 uni.showLoading({
                     mask: true,
                     title: "图片加载中"
@@ -256,7 +253,7 @@ export default {
                     success: async (res) => {
                         // console.log(res.tapIndex, res.index);
                         if (res.tapIndex === 0) {
-                            let b = await this.FileManager.download(item);
+                            const b = await this.FileManager.download(item);
                             if (!b) return;
                             uni.showToast({
                                 icon: "none",
@@ -274,7 +271,7 @@ export default {
         async playVideo(item) {
             this.video = item;
             // 预览时缓存于应用沙盒目录
-            let b = await this.FileManager.cache(item);
+            const b = await this.FileManager.cache(item);
             if (!b) return;
             uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
         },
@@ -288,7 +285,7 @@ export default {
                 content: item.content,
                 success: async (res) => {
                     if (res.cancel) return;
-                    let b = await this.FileManager.download(item);
+                    const b = await this.FileManager.download(item);
                     if (!b) return;
                     uni.setStorageSync(`${this.me.userId}-${this.chat.conversationId}`, this.messages);
                 }
@@ -296,7 +293,7 @@ export default {
         },
 
         openFile: throttle(async function (item) {
-            let b = await this.FileManager.download(item);
+            const b = await this.FileManager.download(item);
             if (!b) return;
             uni.showModal({
                 title: "文件保存于",
@@ -326,21 +323,21 @@ export default {
         },
 
         async chooseImage() {
-            let files = await this.FileManager.chooseImage(9);
+            const files = await this.FileManager.chooseImage(9);
             if (!files) return;
             this.getFiles(files);
             this.chooseMore = false;
         },
 
         async chooseVideo() {
-            let file = await this.FileManager.chooseVideo();
+            const file = await this.FileManager.chooseVideo();
             if (!file) return;
             this.getFiles([file]);
             this.chooseMore = false;
         },
 
         async chooseFile() {
-            let file = await this.FileManager.chooseFile();
+            const file = await this.FileManager.chooseFile();
             if (!file) return;
             this.getFiles([file]);
             this.chooseMore = false;
@@ -370,9 +367,9 @@ export default {
         },
 
         async uploadFile(file) {
-            let message = this.messages.find((elm) => elm.fileId === file.idinclient);
+            const message = this.messages.find((elm) => elm.fileId === file.idinclient);
             // 设置监听上传进度
-            let i = setInterval(() => {
+            const i = setInterval(() => {
                 message.progress = file.progress;
                 // console.log(message.progress);
                 if (!file.progress || file.progress === 100) {
@@ -381,14 +378,14 @@ export default {
             }, 1000);
             // 上传文件
             // console.log(file);
-            let resFile = await this.FileManager.upload(file, this.chat.conversationId, 1);
+            const resFile = await this.FileManager.upload(file, this.chat.conversationId, 1);
             if (!resFile) return;
             message.conversationId = this.chat.conversationId;
             message.source = resFile.fileId;
             message.replyFor = null;
             if (message.progress !== 100) message.progress = 100;
             // 把文件信息发给服务端
-            let resdata = await this.$api.sendPrivateMessage(message, false);
+            const resdata = await this.$api.sendPrivateMessage(message);
             if (!resdata) {
                 message.sendFailed = true;
                 return;
@@ -402,7 +399,7 @@ export default {
 
         async sendMessage() {
             if (!this.inputValue) return;
-            let message = {
+            const message = {
                 conversationId: this.chat.conversationId,
                 memberId: this.chat.memberId, //用于客户端
                 messageType: "text",
@@ -417,13 +414,13 @@ export default {
                 this.scrollBottomHeight = this.messages.length * 500 + this.containerHeight;
             });
             // 发给服务端
-			let tempMessage = {};
+			const tempMessage = {};
 			let resdata;
 			try {
 				Object.assign(tempMessage, message);
 				tempMessage.content = this.Encrypt.encrypt(this.chat.otherUser.publicKey, tempMessage.content);
 				tempMessage.signature = tempMessage.content;
-				resdata = await this.$api.sendPrivateMessage(tempMessage, false);
+				resdata = await this.$api.sendPrivateMessage(tempMessage);
 			} catch (e) {
 				uni.showModal({
 					title: "加密失败",

@@ -32,7 +32,7 @@ export default {
     },
     methods: {
         async getUserInfo() {
-            let resdata = await this.$api.getSelfUserInfo(null, false);
+            const resdata = await this.$api.getSelfUserInfo();
             if (!resdata) return;
             this.user = resdata;
             this.$store.commit("setUserInfo", resdata);
@@ -43,7 +43,7 @@ export default {
                 content: "确定退出登录？",
 				success: (res)=>{
 					if(!res.confirm) return;
-					this.$api.logout(null, false);
+					this.$api.logout();
 					this.$store.commit("setUserInfo", null);
 					uni.clearStorageSync(); //暂调试用，后做选择
 					// bug：退出登录未重启再重新登录时，fileToken未更新

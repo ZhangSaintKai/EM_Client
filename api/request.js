@@ -1,133 +1,104 @@
 import BaseUrl from "@/api/base-url.js";
 import store from "@/store/index.js";
 
-module.exports = {
-	async request(method, api, optionName, payload, showLoading) {
 
-		// 指明不需要加载，或者正在显示模态弹框时，不显示加载中
-		if (!showLoading || store.getters.getShowingModal) {
-			uni.hideLoading();
-		} else {
-			uni.showLoading({
-				title: "加载中",
-				mask: true
+// 序列化对象内所有层次的纯字符串数组
+function serializeStringArrays(obj) {
+	function serialize(data) {
+		if (Array.isArray(data)) {
+			// 如果是纯字符串数组，则转换为逗号分隔的字符串
+			if (data.every(e => typeof e === "string")) {
+				return data.join(",");
+			} else {
+				// 否则对数组中的每一项进行递归处理
+				return data.map(serialize);
+			}
+		} else if (typeof data === "object" && data !== null) {
+			// 如果是对象，则递归处理每个属性
+			for (const key in data) {
+				data[key] = serialize(data[key]);
+			}
+		}
+		return data;
+	}
+	return serialize(obj);
+}
+
+/**
+ * 发起网络请求
+ * @param {String} method 请求方法
+ * @param {String} api 请求接口
+ * @param {String} optionName 业务操作名称
+ * @param {Object} data 请求的参数
+ * @param {Boolean} postFromBody POST时接口是否使用FromBody从正文接收参数（此处指非JSON单参数值）
+ * @return {Promise} resdata 响应数据
+ */
+async function request(method, api, optionName, data = null, postFromBody = false) {
+
+	// 序列化纯字符串数组类型的参数
+	data = serializeStringArrays(data);
+
+	uni.addInterceptor("request", {
+		// 请求失败拦截
+		fail: (e) => {
+			if (e.errMsg.includes("CertPathValidatorException")) return; // 不提示证书类错误
+			setTimeout(() => {
+				uni.showToast({
+					title: "连接服务器失败，请联系开发者",
+					icon: "none",
+					duration: 3000
+				});
+			}, 600);
+		},
+		// 请求完成回调，无论成功或失败
+		complete: () => {
+			uni.removeInterceptor("request");
+		}
+	});
+
+	const token = store.getters.getUserInfo?.token || "";
+
+	if (method === "POST" && postFromBody) data = JSON.stringify(data);
+	// JSON.stringify("zhangsan") 结果是 "\"zhangsan\""
+
+	const [error, response] = await uni.request({
+		method: method,
+		url: `${BaseUrl.http}/${api}`,
+		header: {
+			"Authorization": token
+		},
+		data: data,
+		// 无已备案域名,不能使用CA颁发的SSL证书,关闭验证
+		sslVerify: false
+	});
+
+	// 请求失败（已在拦截器的失败回调中处理）
+	if (error) return false;
+
+	// 响应异常
+	if (response.statusCode !== 200) {
+		const mapErrMsg = {
+			"404": "请求方法错误或路径不正确",
+			"400": "请求语法错误或参数不正确",
+			"401": token ? "登录失效，请重新登录" : "请登录",
+			"403": "没有权限",
+			"413": "Payload Too Large",
+			"422": response.data,
+			"500": response.data
+		};
+		if (!store.getters.getShowingModal) {
+			store.commit("setShowingModal", true);
+			await uni.showModal({
+				title: optionName ? `${optionName}失败` : "",
+				content: `${ mapErrMsg[`${response.statusCode}`] || "未定义错误类型" }`,
+				showCancel: false
 			});
 		}
-
-		uni.addInterceptor("request", {
-			// 请求失败拦截
-			fail: (e) => {
-				if (e.errMsg.includes("CertPathValidatorException")) return; // 不提示证书类错误
-				console.log("【请求】失败：" + e.errMsg);
-				let tip = "连接服务器失败，请联系开发者";
-				if (!store.getters.getNetworkStatus) tip = "当前无网络连接，请联网";
-				setTimeout(() => {
-					uni.showToast({
-						title: tip,
-						icon: "none",
-						duration: 3000
-					});
-				}, 600);
-			},
-			// 请求完成回调，无论成功或失败
-			complete: () => {
-				uni.removeInterceptor("request");
-				if (showLoading) uni.hideLoading();
-			}
-		});
-
-		let userInfo = store.getters.getUserInfo;
-		let token = "";
-		if (userInfo) token = userInfo.token;
-		let [error, response] = await uni.request({
-			method: method,
-			url: `${BaseUrl.http}/${api}`,
-			header: {
-				"Authorization": token
-			},
-			data: payload,
-			// 没有已备案的域名,无法使用CA颁发的SSL证书,只能关闭验证
-			sslVerify: false
-		});
-
-		// 请求失败（已在拦截器的失败回调中处理）
-		if (error) return false;
-
-		// 响应异常
-		if (response.statusCode !== 200) {
-			let content = "";
-			switch (response.statusCode) {
-				case 404:
-					content = "请求方法错误或路径不正确，请联系开发者";
-					break;
-				case 400:
-					content = "请求语法错误或参数不正确，请联系开发者";
-					break;
-					// 未认证
-				case 401: {
-					if (store.getters.getShowingModal) break;
-					let [err, result] = await uni.showToast({
-						icon: "none",
-						title: token ? "登录失效，请重新登录" : "请登录",
-						mask: true
-					});
-					// 获取登录前路径和参数
-					let pages = getCurrentPages();
-					let beforeLoginPath = pages[pages.length - 1].$page.fullPath;
-					setTimeout(() => {
-						uni.redirectTo({
-							url: "/pages/user/login/login?beforeLoginPath=" +
-								beforeLoginPath
-						});
-					}, 800);
-					return false;
-				}
-				// 该登录用户没有访问当前资源的权限
-				case 403:
-					content = "没有权限";
-					break;
-					// 请求体超大
-				case 413:
-					content = "Payload Too Large";
-					break;
-					// 业务错误、内部错误
-				case 422:
-				case 500:
-					content = response.data;
-					break;
-				default:
-					content = `[${response.statusCode}]未定义的错误类型`;
-					break;
-			}
-			if (!store.getters.getShowingModal) {
-				store.commit("setShowingModal", true);
-				let [err, result] = await uni.showModal({
-					title: optionName + "失败",
-					content: content,
-					showCancel: false
-				});
-				store.commit("setShowingModal", false);
-			}
-			return false;
-		}
-
-		// #ifdef APP-PLUS
-		// let unnormal = JSON.stringify(response.header["Content-Type"].startsWith("text/html"));
-		// if (unnormal) {
-		// 	if (!store.getters.getShowingModal) {
-		// 		store.commit("setShowingModal", true);
-		// 		let [err, result] = await uni.showModal({
-		// 			title: optionName + "失败",
-		// 			content: response.data,
-		// 			showCancel: false
-		// 		});
-		// 		store.commit("setShowingModal", false);
-		// 	}
-		// }
-		// #endif
-
-		// 响应正常，返回响应数据
-		return response.data;
-
+		return false;
 	}
-};
+
+	// 响应正常，返回响应数据
+	return response.data;
+
+}
+export default request;

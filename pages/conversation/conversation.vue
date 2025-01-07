@@ -70,13 +70,13 @@ export default {
     },
     methods: {
         async getGetConversationList() {
-            let resdata = await this.$api.getPrivateConversationList(null, false);
+            const resdata = await this.$api.getPrivateConversationList();
             if (!resdata) return;
             resdata.forEach((elm) => {
                 if (!elm.newestMessageId) {
                     // 没有获取到最新消息的，从本地消息的最新一条填充
-                    let messages = uni.getStorageSync(`${this.userInfo.userId}-${elm.conversationId}`);
-                    let newest = messages[messages.length - 1];
+                    const messages = uni.getStorageSync(`${this.userInfo.userId}-${elm.conversationId}`);
+                    const newest = messages[messages.length - 1];
                     if (newest) {
                         elm.newestMessageId = newest.messageId;
                         elm.senderMemberId = newest.memberId;

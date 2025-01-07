@@ -36,7 +36,7 @@ export default {
     },
     methods: {
         async getUserProfileByID() {
-            let resdata = await this.$api.getUserProfileByID({
+            const resdata = await this.$api.getUserProfileByID({
                 userId: this.userId
             });
             // this.user = resdata;
@@ -45,14 +45,14 @@ export default {
 			this.user.isContact = resdata.isContact;
         },
         async checkContact() {
-            let resdata = await this.$api.checkContact({
+            const resdata = await this.$api.checkContact({
                 targetUserId: this.userId
             });
             this.user.isContact = resdata;
 			console.log(this.user.isContact);
         },
         async sendMessage() {
-            let resdata = await this.$api.addPrivateConversation(JSON.stringify(this.userId));
+            const resdata = await this.$api.addPrivateConversation( this.userId );
             if (!resdata) return;
             // 获取会话对象
             this.$store.commit("setChat", resdata);
@@ -61,7 +61,7 @@ export default {
             });
         },
         async addContact() {
-            let resdata = await this.$api.addContact(JSON.stringify(this.userId));
+            const resdata = await this.$api.addContact( this.userId );
             if (!resdata) return;
             uni.showToast({
                 icon: "none",

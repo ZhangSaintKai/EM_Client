@@ -33,14 +33,14 @@ export default {
     },
     methods: {
         async getUserInfo() {
-            let resdata = await this.$api.getSelfUserInfo(null, false);
+            const resdata = await this.$api.getSelfUserInfo();
             if (!resdata) return;
             this.user = resdata;
             this.$store.commit("setUserInfo", resdata);
         },
 
         async uploadImage() {
-            let files = await this.FileManager.chooseImage(1, true, true);
+            const files = await this.FileManager.chooseImage(1, true, true);
             if (!files) return;
             if (files[0].width < 200 || files[0].height < 200) {
                 uni.showToast({
@@ -49,14 +49,14 @@ export default {
                 });
                 return;
             }
-            let resFile = await this.FileManager.upload(files[0], this.user.userId, 0);
+            const resFile = await this.FileManager.upload(files[0], this.user.userId, 0);
             if (!resFile) return;
             this.updateAvatar(resFile);
         },
 
         async updateAvatar(file) {
             // console.log(file);
-            let resA = await this.$api.updateUserAvatar(JSON.stringify(file.fileId));
+            const resA = await this.$api.updateUserAvatar( file.fileId );
             if (!resA) return;
             uni.showToast({
                 icon: "none",
@@ -66,9 +66,9 @@ export default {
         },
 
         async save() {
-            let resN = await this.$api.updateUserNickName(JSON.stringify(this.user.nickName), false);
+            const resN = await this.$api.updateUserNickName( this.user.nickName );
             if (!resN) return;
-            let resE = await this.$api.updateUserEMID(JSON.stringify(this.user.emid));
+            const resE = await this.$api.updateUserEMID( this.user.emid );
             if (!resE) return;
             uni.showToast({
                 icon: "none",

@@ -25,7 +25,7 @@ export default {
     },
     methods: {
         async getList() {
-            let resdata = await this.$api.getContactList(null, false);
+            const resdata = await this.$api.getContactList();
             if (!resdata) return;
             this.contactList = resdata;
         },
