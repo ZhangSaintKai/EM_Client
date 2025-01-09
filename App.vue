@@ -27,7 +27,8 @@ export default {
 		const downloadTask = uni.downloadFile({
 			url: BaseUrl.http + "/Client/GetPkgWgt",
 			success: (resDownload) => {
-				uni.hideLoading();
+				// uni.hideLoading();
+				plus.nativeUI.closeWaiting();
 				console.log(JSON.stringify(resDownload));
 				if (resDownload.statusCode !== 200) return;
 				uni.showLoading({
@@ -62,31 +63,31 @@ export default {
 					}
 				);
 			},
-			fail: (e) => {
-				uni.hideLoading();
-				uni.showModal({
-					title: "下载失败",
-					content: JSON.stringify(e),
-					showCancel: false
+			fail: async () => {
+				// uni.hideLoading();
+				plus.nativeUI.closeWaiting();
+				const res = await uni.showModal({
+					title: "自动下载失败",
+					content: "是否前往浏览器手动下载？",
+					confirmText: "前往下载"
+				});
+				if (res.confirm) plus.runtime.openURL(BaseUrl.http + "/Client/GetPkgWgt");
+				await uni.setClipboardData({
+					data: BaseUrl.http + "/Client/GetPkgWgt"
+				});
+				uni.showToast({
+					title: "已复制链接",
+					icon: "none"
 				});
 			}
 		});
 
 		// const payload = {progress:0}
 		// plus.push.createMessage("本地推送消息", payload);
-
+		// 展示下载进度
 		downloadTask.onProgressUpdate((res) => {
-			if (res.progress % 5 === 0) {
-				if (res.progress !== 0) uni.hideLoading();
-				uni.showLoading({
-					title: `正在下载${res.progress}%`,
-					mask: true
-				});
-			}
-			// 满足测试条件，取消下载任务。
-			if (res.progress > 50) {
-				downloadTask.abort();
-			}
+			if (res.progress % 3 === 2) plus.nativeUI.closeWaiting();
+			if (res.progress % 3 === 0) plus.nativeUI.showWaiting(`正在下载${res.progress}%`, { back: "none", background: "#00000000", color: "#55aaff" });
 		});
 
 		//
