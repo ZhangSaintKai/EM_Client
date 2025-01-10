@@ -2,21 +2,30 @@ import NodeRSA from "node-rsa";
 
 const key = new NodeRSA();
 
-let publicKey = uni.getStorageSync("publicKey");
-let privateKey = uni.getStorageSync("privateKey");
-if (!publicKey || !privateKey) {
-	uni.showLoading({
-		title: "正在生成密钥"
-	});
-	key.generateKeyPair();
-	publicKey = key.exportKey("public");
-	privateKey = key.exportKey("private");
-	uni.setStorageSync("publicKey", publicKey);
-	uni.setStorageSync("privateKey", privateKey);
-	uni.hideLoading();
-}
-key.importKey(privateKey, "private");
+let publicKey, privateKey;
 
+function ReadOrGenKeyPair() {
+	publicKey = uni.getStorageSync("publicKey");
+	privateKey = uni.getStorageSync("privateKey");
+	if (!publicKey || !privateKey) {
+		uni.showToast({
+			title: "正在生成密钥",
+			icon: "none",
+			mask: true,
+			duration: 20000
+		});
+		key.generateKeyPair();
+		publicKey = key.exportKey("public");
+		privateKey = key.exportKey("private");
+		uni.setStorageSync("publicKey", publicKey);
+		uni.setStorageSync("privateKey", privateKey);
+		uni.hideToast();
+	}
+}
+
+ReadOrGenKeyPair();
+
+key.importKey(privateKey, "private");
 
 function sign(content) {
 	return key.sign(content, "base64", "utf8");
@@ -43,6 +52,7 @@ function verify(targetPubKey, decryptedContent, signature) {
 
 
 export default {
+	ReadOrGenKeyPair: ReadOrGenKeyPair,
 	sign: sign,
 	encrypt: encrypt,
 	decrypt: decrypt,

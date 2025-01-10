@@ -3,6 +3,7 @@ import BaseUrl from "@/api/base-url.js";
 import store from "./store";
 export default {
 	onLaunch: async () => {
+		// ↓↓↓检查版本更新↓↓↓
 		const [errCheck, resCheck] = await uni.request({
 			url: BaseUrl.http + "/Client/CheckUpdate",
 			method: "GET",
@@ -16,79 +17,80 @@ export default {
 			return;
 		}
 		const checkdata = resCheck?.data;
-		if (!checkdata?.update) return;
-		const result = await uni.showModal({
-			title: "请使用新版本：" + checkdata.version,
-			content: checkdata.description || "",
-			showCancel: false,
-			confirmText: "更新"
-		});
-		// if (!result.confirm) return;
-		const downloadTask = uni.downloadFile({
-			url: BaseUrl.http + "/Client/GetPkgWgt",
-			success: (resDownload) => {
-				// uni.hideLoading();
-				plus.nativeUI.closeWaiting();
-				console.log(JSON.stringify(resDownload));
-				if (resDownload.statusCode !== 200) return;
-				uni.showLoading({
-					title: "更新中",
-					mask: true
-				});
-				plus.runtime.install(
-					resDownload.tempFilePath,
-					{
-						force: false
-					},
-					() => {
-						uni.hideLoading();
-						uni.showToast({
-							icon: "none",
-							title: "更新完成",
-							mask: true,
-							duration: 600
-						});
-						setTimeout(() => {
-							// 热重启
-							plus.runtime.restart();
-						}, 1000);
-					},
-					(e) => {
-						uni.hideLoading();
-						uni.showModal({
-							title: "更新失败",
-							content: JSON.stringify(e),
-							showCancel: false
-						});
-					}
-				);
-			},
-			fail: async () => {
-				// uni.hideLoading();
-				plus.nativeUI.closeWaiting();
-				const res = await uni.showModal({
-					title: "自动下载失败",
-					content: "是否前往浏览器手动下载？",
-					confirmText: "前往下载"
-				});
-				if (res.confirm) plus.runtime.openURL(BaseUrl.http + "/Client/GetPkgWgt");
-				await uni.setClipboardData({
-					data: BaseUrl.http + "/Client/GetPkgWgt"
-				});
-				uni.showToast({
-					title: "已复制链接",
-					icon: "none"
-				});
-			}
-		});
-
-		// const payload = {progress:0}
-		// plus.push.createMessage("本地推送消息", payload);
-		// 展示下载进度
-		downloadTask.onProgressUpdate((res) => {
-			if (res.progress % 3 === 2) plus.nativeUI.closeWaiting();
-			if (res.progress % 3 === 0) plus.nativeUI.showWaiting(`正在下载${res.progress}%`, { back: "none", background: "#00000000", color: "#55aaff" });
-		});
+		if (checkdata?.update && plus.runtime.appid !== "HBuilder") {
+			const result = await uni.showModal({
+				title: "请使用新版本：" + checkdata.version,
+				content: checkdata.description || "",
+				showCancel: false,
+				confirmText: "更新"
+			});
+			// if (!result.confirm) return;
+			const downloadTask = uni.downloadFile({
+				url: BaseUrl.http + "/Client/GetPkgWgt",
+				success: (resDownload) => {
+					// uni.hideLoading();
+					plus.nativeUI.closeWaiting();
+					console.log(JSON.stringify(resDownload));
+					if (resDownload.statusCode !== 200) return;
+					uni.showLoading({
+						title: "更新中",
+						mask: true
+					});
+					plus.runtime.install(
+						resDownload.tempFilePath,
+						{
+							force: false
+						},
+						() => {
+							uni.hideLoading();
+							uni.showToast({
+								icon: "none",
+								title: "更新完成",
+								mask: true,
+								duration: 600
+							});
+							setTimeout(() => {
+								// 热重启
+								plus.runtime.restart();
+							}, 1000);
+						},
+						(e) => {
+							uni.hideLoading();
+							uni.showModal({
+								title: "更新失败",
+								content: JSON.stringify(e),
+								showCancel: false
+							});
+						}
+					);
+				},
+				fail: async () => {
+					// uni.hideLoading();
+					plus.nativeUI.closeWaiting();
+					const res = await uni.showModal({
+						title: "自动下载失败",
+						content: "是否前往浏览器手动下载？",
+						confirmText: "前往下载"
+					});
+					if (res.confirm) plus.runtime.openURL(BaseUrl.http + "/Client/GetPkgWgt");
+					await uni.setClipboardData({
+						data: BaseUrl.http + "/Client/GetPkgWgt"
+					});
+					uni.showToast({
+						title: "已复制链接",
+						icon: "none"
+					});
+				}
+			});
+			// const payload = {progress:0}
+			// plus.push.createMessage("本地推送消息", payload);
+			// 展示下载进度
+			downloadTask.onProgressUpdate((res) => {
+				if (res.progress % 3 === 2) plus.nativeUI.closeWaiting();
+				if (res.progress % 3 === 0) plus.nativeUI.showWaiting(`正在下载${res.progress}%`, { back: "none", background: "#00000000", color: "#55aaff" });
+			});
+		}
+		// ↑↑↑检查版本更新↑↑↑
 
 		//
 		uni.connectSocket({

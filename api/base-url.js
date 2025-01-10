@@ -1,8 +1,5 @@
 /**
- * 调用匿名函数
- * (function (param?){
- * statement
- * }(param?))
+ * 服务器基础地址
  */
 module.exports = (() => {
 
@@ -40,3 +37,9 @@ module.exports = (() => {
 	};
 
 })();
+/**
+ * 调用匿名函数
+ * (function (param?){
+ * statement
+ * }(param?))
+ */
