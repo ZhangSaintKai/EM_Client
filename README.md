@@ -1,4 +1,4 @@
-#### UniApp项目，基于Vue2构建，使用HbuilderX3.8.7开发工具
+#### UniApp项目，基于Vue2构建，使用HbuilderX v3.8.12开发工具
 #### Node版本管理工具nvm
 * 下载：https://github.com/coreybutler/nvm-windows/releases
 * 安装Node（版本>= 16.18.0）：nvm install 16.18.0
