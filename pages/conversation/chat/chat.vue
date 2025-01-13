@@ -187,9 +187,17 @@ export default {
 				//暂只解密文本类消息
 					if(elm.messageType === "text")
 					elm.content = this.Encrypt.decrypt(elm.content);
+					const verifyResult = this.Encrypt.verify(this.chat.otherUser.publicKey, elm.content, elm.signature);
+					if (!verifyResult) {
+						uni.showModal({
+							title: "验证签名失败",
+							content: `以下内容存在被篡改风险\n${elm.content}`,
+							showCancel: false
+						});
+					}
 				} catch (e) {
 					uni.showModal({
-						title: "解密失败",
+						title: "解密消息失败",
 						content: `${e.errMsg || e}`,
 						showCancel: false
 					});
@@ -418,12 +426,12 @@ export default {
 			let resdata;
 			try {
 				Object.assign(tempMessage, message);
+				tempMessage.signature = this.Encrypt.sign(tempMessage.content);
 				tempMessage.content = this.Encrypt.encrypt(this.chat.otherUser.publicKey, tempMessage.content);
-				tempMessage.signature = tempMessage.content;
 				resdata = await this.$api.sendPrivateMessage(tempMessage);
 			} catch (e) {
 				uni.showModal({
-					title: "加密失败",
+					title: "发送加密消息失败",
 					content: `${e.errMsg || e}`,
 					showCancel: false
 				});
