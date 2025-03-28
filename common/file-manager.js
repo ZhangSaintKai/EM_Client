@@ -24,8 +24,10 @@ async function chooseImage(count = 1, compress = false, keepScale = false) {
 		});
 		return false;
 	}
-	let [err, res] = await uni.chooseImage({
-		count: count
+	const [err, res] = await uni.chooseImage({
+		count: count,
+		// sizeType: ["original", "compressed"]
+		sizeType: ["original"]
 	});
 	if (err) {
 		// uni.showToast({
@@ -36,7 +38,7 @@ async function chooseImage(count = 1, compress = false, keepScale = false) {
 	}
 	if (compress) {
 		for (let i = 0; i < res.tempFiles.length; i++) {
-			let [errcp, rescp] = await uni.compressImage({
+			const [errcp, rescp] = await uni.compressImage({
 				src: res.tempFiles[i].path,
 				width: "512px",
 				height: keepScale ? "auto" : "512px"
@@ -45,21 +47,21 @@ async function chooseImage(count = 1, compress = false, keepScale = false) {
 			res.tempFiles[i].path = rescp.tempFilePath;
 		}
 	}
-	let files = [];
+	const files = [];
 	res.tempFiles.forEach(elm => {
-		let file = {
+		const file = {
 			idinclient: uuidv4(),
 			url: elm.path,
 			sizeMB: compress ? "AlreadyCompressed" : (elm.size / 1024 / 1024).toFixed(4)
 		};
-		let splitPath = elm.path.split("/");
+		const splitPath = elm.path.split("/");
 		file.name = splitPath[splitPath.length - 1];
 		file.type = "image";
 		files.push(file);
 	});
 	// 图片添加宽高信息
 	for (let i = 0; i < files.length; i++) {
-		let [errinfo, resinfo] = await uni.getImageInfo({
+		const [errinfo, resinfo] = await uni.getImageInfo({
 			src: files[i].url
 		});
 		files[i].width = resinfo.width;
@@ -73,16 +75,16 @@ async function chooseImage(count = 1, compress = false, keepScale = false) {
  * @returns {Object} 所选的视频文件对象
  */
 async function chooseVideo() {
-	let [err, res] = await uni.chooseVideo({
+	const [err, res] = await uni.chooseVideo({
 		compressed: false
 	});
 	if (err) return false;
-	let file = {
+	const file = {
 		idinclient: uuidv4(),
 		url: res.tempFilePath,
 		sizeMB: (res.size / 1024 / 1024).toFixed(4)
 	};
-	let splitPath = res.tempFilePath.split("/");
+	const splitPath = res.tempFilePath.split("/");
 	file.name = splitPath[splitPath.length - 1];
 	file.type = "video";
 	return file;
@@ -124,8 +126,8 @@ function chooseFile() {
 		//打开文件选择器
 		utsFileSelect({
 			success: (res) => {
-				let splitPath = res.filePath.split(".");
-				let file = {
+				const splitPath = res.filePath.split(".");
+				const file = {
 					idinclient: uuidv4(),
 					url: res.filePath,
 					name: res.fileName,
@@ -164,7 +166,7 @@ function chooseFile() {
 function upload(file, ownerId, ownerType = 0) {
 	// console.log(file);
 	return new Promise((resolve, reject) => {
-		let userInfo = store.getters.getUserInfo;
+		const userInfo = store.getters.getUserInfo;
 		// 此API不限制上传文件大小
 		const uploadTask = uni.uploadFile({
 			url: `${BaseUrl.http}/File/Upload?ownerId=${ownerId}&ownerType=${ownerType}`,
@@ -182,7 +184,7 @@ function upload(file, ownerId, ownerType = 0) {
 			success: (res) => {
 				if (res.statusCode === 200) {
 					// 上传成功
-					let resFile = JSON.parse(res.data);
+					const resFile = JSON.parse(res.data);
 					resolve(resFile);
 				} else {
 					let message = "未知错误\n请联系开发者";
@@ -228,37 +230,42 @@ function cancelUpload(file) {
 
 /**
  * 将消息文件缓存于应用沙盒目录
+ * @param {Object} item 要缓存的项目
+ * @returns {Promise<boolean>} 返回Promise，true表示成功，false表示失败
  */
 function cache(item) {
-	if (item.localUrl || item.caching) return;
+	// 检查是否已有缓存或正在缓存
+	if (item.localUrl) return Promise.resolve(true);
+	if (item.caching) return Promise.resolve(false);
 	item.caching = true;
 	return new Promise((resolve, reject) => {
 		uni.downloadFile({
 			url: BaseUrl.file + item.source,
-			success: resD => {
-				if (resD.statusCode === 200) {
-					uni.saveFile({
-						tempFilePath: resD.tempFilePath,
-						success: resS => {
-							item.caching = false;
-							console.log(resD.statusCode, "已缓存至", resS.savedFilePath);
-							item.localUrl = resS.savedFilePath;
-							resolve(true);
-						},
-						fail: (e) => {
-							reject();
-						}
-
-					});
-				} else {
-					reject();
+			success: (resD) => {
+				if (resD.statusCode !== 200) {
+					item.caching = false;
+					return reject();
 				}
+				uni.saveFile({
+					tempFilePath: resD.tempFilePath,
+					success: (resS) => {
+						item.caching = false;
+						// console.log(resD.statusCode, "已缓存至", resS.savedFilePath);
+						item.localUrl = resS.savedFilePath;
+						resolve(true);
+					},
+					fail: (e) => {
+						item.caching = false;
+						reject();
+					}
+				});
 			},
 			fail: (e) => {
+				item.caching = false;
 				reject();
 			}
 		});
-	});
+	}).catch(() => {});
 }
 
 /**
@@ -272,7 +279,7 @@ function download(item) {
 		return;
 	}
 	return new Promise((resolve, reject) => {
-		let isCache = item.localUrl && !item.localUrl.includes("EncryptedMessage");
+		const isCache = item.localUrl && !item.localUrl.includes("EncryptedMessage");
 		plus.io.resolveLocalFileSystemURL(
 			isCache ? "" : item.localUrl,
 			(exist) => {
@@ -280,11 +287,11 @@ function download(item) {
 				resolve(true);
 			}, (e) => {
 				// 未下载
-				let sourceUrl = BaseUrl.file + item.source;
+				const sourceUrl = BaseUrl.file + item.source;
 				// 保存路径file:///storage/emulated/0/就是用户文件管理器能看到的根目录
-				let destinationUrl =
+				const destinationUrl =
 					`file:///storage/emulated/0/EncryptedMessage/download/${item.messageType}/${item.content}`;
-				let downloadTask = plus.downloader.createDownload(
+				const downloadTask = plus.downloader.createDownload(
 					sourceUrl, {
 						filename: destinationUrl,
 						timeout: 6,
@@ -307,7 +314,7 @@ function download(item) {
 						}
 					});
 				item.downloadid = downloadTask.id;
-				let userInfo = store.getters.getUserInfo;
+				const userInfo = store.getters.getUserInfo;
 				downloadTask.setRequestHeader("Authorization", userInfo && userInfo.token || "");
 				downloadTask.addEventListener("statechanged", (download, status) => {
 					// 监听下载进度
@@ -320,7 +327,7 @@ function download(item) {
 
 function cancelDownload(id) {
 	plus.downloader.enumerate((list) => {
-		let download = list.find(d => d.id === id);
+		const download = list.find(d => d.id === id);
 		download.abort();
 	});
 }

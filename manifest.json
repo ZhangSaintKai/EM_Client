@@ -2,8 +2,8 @@
     "name" : "EM",
     "appid" : "__UNI__7160533",
     "description" : "",
-    "versionName" : "1.01.01",
-    "versionCode" : 10101,
+    "versionName" : "1.01.02",
+    "versionCode" : 10102,
     "transformPx" : false,
     /* 5+App特有相关 */
     "app-plus" : {

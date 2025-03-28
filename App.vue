@@ -24,7 +24,6 @@ export default {
 				showCancel: false,
 				confirmText: "更新"
 			});
-			// if (!result.confirm) return;
 			const downloadTask = uni.downloadFile({
 				url: BaseUrl.http + "/Client/GetPkgWgt",
 				success: (resDownload) => {

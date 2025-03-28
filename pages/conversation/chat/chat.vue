@@ -13,11 +13,11 @@
 					<view v-if="item.messageType === 'image'" class="image">
 						<!-- 发送时显示进度 -->
 						<image
-							:src="item.progress && item.progress !== 100 ? item.source : BaseUrl.file + item.source"
+							:src="item.localUrl || BaseUrl.file + item.source"
 							mode="heightFix"
 							@tap="previewImage(item)"
 						></image>
-						<view v-if="item.progress && item.progress !== 100" class="progress">{{ item.progress }}%</view>
+						<view v-if="item.progress > 0 && item.progress < 100" class="progress">{{ item.progress }}%</view>
 					</view>
 					<view v-if="item.messageType === 'video'" class="video">
 						<image src="../../../static/icon/video.png" mode="scaleToFill" @tap="playVideo(item)" @longpress="longPressVideo(item)"></image>
@@ -516,6 +516,7 @@ export default {
 			border-radius: 0.3em;
 			text-align: right;
 			position: relative;
+			box-shadow: 0px 0px 5rpx 5rpx rgba(195, 195, 195, 0.2);
 
 			image {
 				height: 252rpx; // 16:9比例的图片不变形
