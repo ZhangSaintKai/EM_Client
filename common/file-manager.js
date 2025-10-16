@@ -160,23 +160,23 @@ function chooseFile() {
  * 文件上传方法
  * @param {Object} file	{name: string, url: string} 文件信息对象
  * @param {String} ownerId 文件所属Id
- * @param {Number} ownerType 文件所属类型 (0：公开，无限制，1：指定会话内，2：指定会话成员，3：指定用户)
+ * @param {Number} permissionType 文件权限类型 (0：公开，无限制，1：指定会话内，2：指定会话成员，3：指定用户)
  * @returns {Promise} 文件上传执行结果
  */
-function upload(file, ownerId, ownerType = 0) {
+function upload(file, ownerId, permissionType = 0) {
 	// console.log(file);
 	return new Promise((resolve, reject) => {
 		const userInfo = store.getters.getUserInfo;
 		// 此API不限制上传文件大小
 		const uploadTask = uni.uploadFile({
-			url: `${BaseUrl.http}/File/Upload?ownerId=${ownerId}&ownerType=${ownerType}`,
+			url: `${BaseUrl.http}/File/Upload?ownerId=${ownerId}&permissionType=${permissionType}`,
 			header: {
 				"Authorization": userInfo && userInfo.token || ""
 			},
 			filePath: file.url,
 			// formData:{
 			// 	ownerId: ownerId,
-			// 	ownerType:ownerType
+			// 	permissionType:permissionType
 			// },
 			name: "EM_Client_File",
 			timeout: 10 * 60 * 1000, // 超时时间设置为十分钟

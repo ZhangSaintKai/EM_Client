@@ -24,9 +24,11 @@ function formatDateTime(timeString) {
 }
 
 /**
- * 如果时间差大于一年，则在格式化结果中显示年、月、日、小时和分钟；
- * 如果时间差大于一天，则在格式化结果中显示月、日、小时和分钟；
- * 如果时间差小于一天，则只显示小时和分钟
+ * 根据与当前时间的差距显示时间：
+ * 大于一年，显示年、月、日、小时和分钟；
+ * 大于一天，显示月、日、小时和分钟；
+ * 小于一天，只显示小时和分钟
+ * @param {Object} timeString
  */
 function optimizeFormatDateTime(timeString) {
 	if (!timeString) return "";
