@@ -175,26 +175,28 @@ export default {
             this.scrollBottomHeight = this.messages.length * 500 + this.containerHeight;
             if (!resdata) return;
             // 【利用自增消息Id去除客户端与服务器重复部分消息】
-            const clientNewestMessage = this.messages.slice(-1)[0];
-            if (clientNewestMessage) {
-                const id = Number(clientNewestMessage.messageId.slice(1));
-                resdata = resdata.filter((elm) => Number(elm.messageId.slice(1)) > id);
-            }
+			const clientNewestMessage = this.messages.slice(-1)[0];
+			if (clientNewestMessage) {
+				const parseId = (messageId) => {
+					// 如果长度超过安全范围，从后往前取16位
+					if (messageId.length > 16) messageId = messageId.slice(-16);
+					return Number(messageId);
+				};
+				const id = parseId(clientNewestMessage.messageId);
+				resdata = resdata.filter((elm) => parseId(elm.messageId) > id);
+			}
             // 【利用自增消息Id去除客户端与服务器重复部分消息】
             resdata.forEach((elm) => {
                 if (elm.messageType !== "text") elm.progress = 0;
-				try{
-				//暂只解密文本类消息
-					if(elm.messageType === "text")
+				try {
 					elm.content = this.Encrypt.decrypt(elm.content);
 					const verifyResult = this.Encrypt.verify(this.chat.otherUser.publicKey, elm.content, elm.signature);
-					if (!verifyResult) {
+					if (!verifyResult)
 						uni.showModal({
 							title: "验证签名失败",
 							content: `以下内容存在被篡改风险\n${elm.content}`,
 							showCancel: false
 						});
-					}
 				} catch (e) {
 					uni.showModal({
 						title: "解密消息失败",
@@ -353,8 +355,7 @@ export default {
 
         getFiles(files) {
             files.forEach((elm) => {
-                // 文件信息加入本地消息列表
-                this.messages.push({
+				const message = {
                     conversationId: this.chat.conversationId,
                     memberId: this.chat.memberId, //用于客户端
                     messageType: elm.type,
@@ -365,7 +366,19 @@ export default {
                     fileId: elm.idinclient,
                     progress: 0,
                     localUrl: elm.url
-                });
+                };
+				try {
+					message.signature = this.Encrypt.sign(message.content);
+					message.content = this.Encrypt.encrypt(this.chat.otherUser.publicKey, message.content);
+				} catch (e) {
+					uni.showModal({
+						title: "加密文件信息失败",
+						content: `${e.errMsg || e}`,
+						showCancel: false
+					});
+				}
+                // 文件信息加入本地消息列表
+                this.messages.push(message);
                 this.uploadFile(elm);
             });
             this.$nextTick(() => {
